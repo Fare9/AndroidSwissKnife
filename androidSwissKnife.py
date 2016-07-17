@@ -186,6 +186,36 @@ allReal = False
 #variable for debugging
 debug = True
 
+totalHelp = '''
+All help is here...
+
+First use: --apktool
+
+We will use apktool to extract data compressed in your apk, please install
+the last version of apktool.
+When finished the process of descompressing with apktool, we will read the
+AndroidManifest.xml and show some strange data (or not).
+After that we will read libraries in apk to find some function that
+are stored in .so files and start by Java_ . Then that functions could be
+called from app code.
+If you added --exiftool flag with --apktool we will extract some meta-data
+from some files with special extension.
+
+Second use: --unzip
+
+If you haven't got enough let's going to start with unzip function.
+We will use unzip to extract data compressed in apk, because you know
+an apk is like zip file.
+Then we will show the certificate from the apk (not good quality but
+you will have it in terminal)
+Then list assets directory, maybe some cool things can be found here.
+Now let's going to show some files can have interesting code.
+
+
+Final Use: --all
+
+Everything put together, live of color and music.
+'''
 ######################################
 
 def printDebug(string):
@@ -341,14 +371,27 @@ def unzipFunc(file):
 
     try:
         os.system(sentence)
-        input("[!] Press input")
+        input("[!] Press enter")
         readCertificate(outputFile)
-        input("[!] Press input")
+        input("[!] Press enter")
         listAsset(outputFile)
-        input("[!] Press input")
+        input("[!] Press enter")
+        listCode(outputFile)
+        input("[!] Press enter")
     except Exception as e:
         printDebug("[Debug] Error: "+str(e))
         print("[-] Maybe you need unzip...")
+
+def listCode(directory):
+    '''
+        Module to list all possible code files
+        now we will list .apk, .jar, .class
+        from unzip content
+    '''
+
+    print('[+] Showing possible code files inside unzip project')
+    statement = "find "+directory+" | grep \"apk\|jar\|class\" "
+    os.system(statement)
 
 def readCertificate(directory):
     '''
@@ -435,7 +478,7 @@ def extractMetaData(directory):
         if jpgFormat:
             for root,dirs,files in os.walk('./assets'):
                 for file in files:
-                    if file.endswith('.jpg')
+                    if file.endswith('.jpg'):
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -443,7 +486,7 @@ def extractMetaData(directory):
         if pngFormat:
             for root,dirs,files in os.walk('./assets'):
                 for file in files:
-                    if file.endswith('.png')
+                    if file.endswith('.png'):
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -451,7 +494,7 @@ def extractMetaData(directory):
         if pdfFormat:
             for root,dirs,files in os.walk('./assets'):
                 for file in files:
-                    if file.endswith('.pdf')
+                    if file.endswith('.pdf'):
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -459,7 +502,7 @@ def extractMetaData(directory):
         if csvFormat:
             for root,dirs,files in os.walk('./assets'):
                 for file in files:
-                    if file.endswith('.csv')
+                    if file.endswith('.csv'):
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -467,7 +510,7 @@ def extractMetaData(directory):
         if txtFormat:
             for root,dirs,files in os.walk('./assets'):
                 for file in files:
-                    if file.endswith('.txt')
+                    if file.endswith('.txt'):
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -480,6 +523,12 @@ def extractMetaData(directory):
 
 ###########################################################################
 
+def showTotalHelp():
+    global totalHelp
+    for c in totalHelp:
+        sys.stdout.write('%s' % c)
+        sys.stdout.flush()
+        time.sleep(0.25)
 def main():
     
     global outputName
@@ -488,19 +537,24 @@ def main():
     global unzipUse
     global exiftoolUse
     global allReal 
+    
 
     help = '''
-        ./androidSwissKnife.py -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--exiftool] [--all]
+        ./androidSwissKnife.py [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--exiftool] [--all]
         -a:     apk file in your directory or absolute path
         -o:     Name for output directories
         --apktool:  use apktool in Analysis
         --unzip: use unzip in Analysis
         --exiftool: use exiftool with some file formats
         --all: use all Analysis
+        --man: get all the help from the program as star wars film
 
         Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
     '''
     for index in range(len(sys.argv)):
+        if sys.argv[index] == '--man':
+            showTotalHelp()
+            sys.exit(0)
         if sys.argv[index] == '-a':
             apkFile = str(sys.argv[index+1])
         if sys.argv[index] == '-o':
