@@ -161,6 +161,7 @@ import os #to use operating system commands
 import sys
 import time
 import random
+import signal
 
 ####################################
 # global variables for input
@@ -179,6 +180,10 @@ unzipUse = False
 
 ## use exiftool in Analysis
 exiftoolUse = False 
+
+
+## regular expression for strings function
+regularExpresion = ''
 
 ## use for all analysis
 allReal = False
@@ -353,7 +358,7 @@ def readLibraries(directory):
 ####################################UNZIP##################################
 def unzipFunc(file):
     global outputName
-
+    global regularExpresion
 
     print ("[+] Creating Directory from apk to unzip output...")
     actualDirectory = os.getcwd() #get actual directory
@@ -378,6 +383,7 @@ def unzipFunc(file):
         input("[!] Press enter")
         listCode(outputFile)
         input("[!] Press enter")
+        showStrings(outputFile,regularExpresion)
     except Exception as e:
         printDebug("[Debug] Error: "+str(e))
         print("[-] Maybe you need unzip...")
@@ -438,6 +444,39 @@ def listAsset(directory):
 
     print("[+] Returning to Directory: "+actualDirectory)
     os.chdir(actualDirectory)
+
+def showStrings(directory,regEx):
+    '''
+        Module to show strings from .dex file or
+        files in general with some regular Expressions
+    '''
+    javaclassRegEx = "L[^;]+?;"
+    urlRegEx = "https?:"
+    urlBase64RegEx = "aHR0cDo|aHR0cHM6L"
+
+    actualDirectory = os.getcwd()
+
+    print('[+] Change diretory to: '+directory)
+    os.chdir(directory)
+
+    for root,dirs,files in os.walk('.'):
+                for file in files:
+                    if file.endswith('.dex'):
+                        print('[+] Showing strings for: '+os.path.join(root,file))
+                        os.system("strings "+os.path.join(root,file)+" | egrep "+javaclassRegEx)
+                        os.system("strings "+os.path.join(root,file)+" | egrep "+urlRegEx)
+                        os.system("strings "+os.path.join(root,file)+" | egrep "+urlBase64RegEx)
+                        if regEx != '':
+                            os.system("strings "+os.path.join(root,file)+" | egrep "+regEx)
+                        time.sleep(0.5)
+                    else:
+                        print('[+] Showing strings for: '+os.path.join(root,file))
+                        os.system("cat "+os.path.join(root,file)+" | egrep "+javaclassRegEx)
+                        os.system("cat "+os.path.join(root,file)+" | egrep "+urlRegEx)
+                        os.system("cat "+os.path.join(root,file)+" | egrep "+urlBase64RegEx)
+                        if regEx != '':
+                            os.system("cat "+os.path.join(root,file)+" | egrep "+regEx)
+                        time.sleep(0.5)
 ###########################################################################
 
 ###################################Exiftool################################
@@ -476,7 +515,7 @@ def extractMetaData(directory):
 
     try:
         if jpgFormat:
-            for root,dirs,files in os.walk('./assets'):
+            for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.jpg'):
                         statement = 'exiftool '+os.path.join(root,file)
@@ -484,7 +523,7 @@ def extractMetaData(directory):
                         time.sleep(0.5)
 
         if pngFormat:
-            for root,dirs,files in os.walk('./assets'):
+            for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.png'):
                         statement = 'exiftool '+os.path.join(root,file)
@@ -492,7 +531,7 @@ def extractMetaData(directory):
                         time.sleep(0.5)
 
         if pdfFormat:
-            for root,dirs,files in os.walk('./assets'):
+            for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.pdf'):
                         statement = 'exiftool '+os.path.join(root,file)
@@ -500,7 +539,7 @@ def extractMetaData(directory):
                         time.sleep(0.5)
 
         if csvFormat:
-            for root,dirs,files in os.walk('./assets'):
+            for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.csv'):
                         statement = 'exiftool '+os.path.join(root,file)
@@ -508,7 +547,7 @@ def extractMetaData(directory):
                         time.sleep(0.5)
 
         if txtFormat:
-            for root,dirs,files in os.walk('./assets'):
+            for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.txt'):
                         statement = 'exiftool '+os.path.join(root,file)
@@ -523,12 +562,20 @@ def extractMetaData(directory):
 
 ###########################################################################
 
+def handler(signum,frame):
+    global totalHelp
+    print("Ohh don't like help print?")
+    print (totalHelp)
+
 def showTotalHelp():
     global totalHelp
+    signal.signal(signal.SIGINT,handler)
+    print("Press CTRL-C to skip")
     for c in totalHelp:
         sys.stdout.write('%s' % c)
         sys.stdout.flush()
         time.sleep(0.25)
+
 def main():
     
     global outputName
@@ -536,15 +583,17 @@ def main():
     global apktoolUse
     global unzipUse
     global exiftoolUse
+    global regularExpresion
     global allReal 
     
 
     help = '''
-        ./androidSwissKnife.py [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--exiftool] [--all]
+        ./androidSwissKnife.py [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--all]
         -a:     apk file in your directory or absolute path
         -o:     Name for output directories
         --apktool:  use apktool in Analysis
         --unzip: use unzip in Analysis
+        --regEx: with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)
         --exiftool: use exiftool with some file formats
         --all: use all Analysis
         --man: get all the help from the program as star wars film
@@ -565,6 +614,8 @@ def main():
             unzipUse = True
         if sys.argv[index] == '--exiftool':
             exiftoolUse = True
+        if sys.argv[index] == '--regEx':
+            regularExpresion = sys.argv[index+1]
         if sys.argv[index] == '--all':
             allReal = True
 
