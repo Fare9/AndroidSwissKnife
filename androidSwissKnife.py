@@ -202,7 +202,7 @@ When finished the process of descompressing with apktool, we will read the
 AndroidManifest.xml and show some strange data (or not).
 After that we will read libraries in apk to find some function that
 are stored in .so files and start by Java_ . Then that functions could be
-called from app code.
+called from app code. New feature that use objdump to get assembly code.
 If you added --exiftool flag with --apktool we will extract some meta-data
 from some files with special extension.
 
@@ -215,6 +215,8 @@ Then we will show the certificate from the apk (not good quality but
 you will have it in terminal)
 Then list assets directory, maybe some cool things can be found here.
 Now let's going to show some files can have interesting code.
+Finally show some strings in files (for now URLs), you can add some
+Regular Expression
 
 
 Final Use: --all
@@ -228,6 +230,46 @@ def printDebug(string):
     global debug
     if debug:
         print (string)
+
+def install():
+
+    if os.geteuid() != 0:
+        print("[-] You need to be root to install packages")
+        exit(-1)
+
+    os.mkdir("Tools")
+
+    actualDirectory = os.getcwd()
+
+    print("[+] Going to Directory Tools")
+    os.chdir("Tools")
+
+    print("[+] Installing last version of apktool")
+    os.system("wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.1.1.jar")
+
+    os.system("chmod +x ./apktool_2.1.1.jar")
+
+    os.system("ln -sf $PWD/apktool_2.1.1.jar /usr/bin/apktool")
+
+    print("[+] Installing last version of jadx")
+
+    os.system("git clone https://github.com/skylot/jadx.git")
+    os.chdir("jadx")
+    os.system("./gradlew dist")
+    os.system("ln -s $PWD/build/jadx/bin/jadx /usr/bin/jadx")
+    os.system("ln -s $PWD/build/jadx/bin/jadx-gui /usr/bin/jadx-gui")
+
+    os.chdir("..")#Go to Tools
+
+    print("[+] Installing exiftool")
+    os.system("sudo apt-get install exiftool")
+
+    print("[+] Installing unzip (if you don't have it yet)")
+    os.system("sudo apt-get install unzip")
+
+    print("[!] Please Install at your own Android SDK and NDK from Android webpage")
+
+    print("[+] Returning to: "+actualDirectory)
 
 ##################################### FOR APKTOOL ###################################
 def createApktoolFunc(file):
@@ -342,7 +384,11 @@ def readAndroidManifest(directory):
     print('[+] Change directory to: '+actualDirectory)
     os.chdir(actualDirectory)
 
-def readLibraries(directory):
+def readLibraries(directory): 
+    '''
+        Process to read library from android native libraries, discover
+        Java functions and finally dissassembling it
+    '''
     global WARNING
     global ENDC
 
@@ -364,6 +410,17 @@ def readLibraries(directory):
                 statement = 'objdump -T '+pathFile+' | grep Java_'
                 os.system(statement)
 
+                print("[+] Disassembling file in: "+file+".txt")
+                if "arm" in pathFile: #for arm libs
+                    statement = 'arm-linux-androideabi-objdump -d '+pathFile+' > '+file+'.txt'
+                    os.system(statement)
+                elif "86" in pathFile: #for x86 32 bits libs
+                    statement = 'i686-linux-android-objdump -d '+pathFile+' > '+file+'.txt'
+                    os.system(statement)
+                elif "mips" in pathFile: #just for Rico's mind
+                    statement = 'i686-linux-android-objdump -d '+pathFile+' > '+file+'.txt'
+                    os.system(statement)
+                #end if
     print('[+] Returning to directory: '+actualDirectory)
     os.chdir(actualDirectory)
 
@@ -602,7 +659,8 @@ def main():
     
 
     help = '''
-        ./androidSwissKnife.py [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--all]
+        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--all]
+        --install: To install some necessary tools
         -a:     apk file in your directory or absolute path
         -o:     Name for output directories
         --apktool:  use apktool in Analysis
@@ -615,6 +673,9 @@ def main():
         Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
     '''
     for index in range(len(sys.argv)):
+        if sys.arv[index] == '--install':
+            install()
+            sys.exit(0)
         if sys.argv[index] == '--man':
             showTotalHelp()
             sys.exit(0)
@@ -656,6 +717,7 @@ def main():
 
 if __name__ == "__main__":
     print(random.choice(bannerP))
-    time.sleep(3)
+    time.sleep(2)
     print (banner)
+    time.sleep(1)
     main()
