@@ -308,6 +308,12 @@ def readAndroidManifest(directory):
         print('\t[+] Mmm want to access CAMERA, look for NSA spy')
     if("hardware.camera" in xmlString):
         print('\t[+] Mmm just for devices with CAMERAAAA')
+    if("READ_CONTACTS" in xmlString):
+        print('\t[+] Mmm want to READ_CONTACTS, take a look')
+    if("RECORD_AUDIO" in xmlString):
+        print('\t[+] Mmm want to RECORD_AUDIO, I hope you must press a button for that')
+    if("WRITE_SETTINGS" in xmlString):
+        print('\t[+] Ohh Want to WRITE_SETTINGS,bad...bad...bad')
     print("%s"%ENDC)
 
     print("%s"%FAIL)
@@ -320,6 +326,14 @@ def readAndroidManifest(directory):
         print('\t[+] Ohh want to READ_SMS look for receiver in code')
     if("WRITE_SMS" in xmlString):
         print('\t[+] Ohh want to WRITE_SMS')
+    if("WRITE_CONTACTS" in xmlString):
+        print('\t[+] Why want to WRITE_CONTACTS ?')
+    if("CALL_PHONE" in xmlString):
+        print('\t[+] Oh really? accept CALL_PHONE')
+    if("PROCESS_OUTGOING_CALLS" in xmlString):
+        print('\t[+] Mother of Edward Snowden, PROCESS_OUTGOING_CALLS O.O')
+    if("KILL_BACKGROUND_PROCESSES" in xmlString):
+        print('\t[+] KILL_BACKGROUND_PROCESSES, even Demi Lovato wouldn\'t accept this app ')
     print("%s"%ENDC)
 
     #close file
@@ -468,7 +482,6 @@ def showStrings(directory,regEx):
                         os.system("strings "+os.path.join(root,file)+" | egrep "+urlBase64RegEx)
                         if regEx != '':
                             os.system("strings "+os.path.join(root,file)+" | egrep "+regEx)
-                        time.sleep(0.5)
                     else:
                         print('[+] Showing strings for: '+os.path.join(root,file))
                         os.system("cat "+os.path.join(root,file)+" | egrep "+javaclassRegEx)
@@ -476,7 +489,6 @@ def showStrings(directory,regEx):
                         os.system("cat "+os.path.join(root,file)+" | egrep "+urlBase64RegEx)
                         if regEx != '':
                             os.system("cat "+os.path.join(root,file)+" | egrep "+regEx)
-                        time.sleep(0.5)
 ###########################################################################
 
 ###################################Exiftool################################
@@ -560,12 +572,14 @@ def extractMetaData(directory):
         print('[+] Returning to: '+actualDirectory)
         os.chdir(actualDirectory)
 
+
 ###########################################################################
 
 def handler(signum,frame):
     global totalHelp
     print("Ohh don't like help print?")
     print (totalHelp)
+    sys.exit(0)
 
 def showTotalHelp():
     global totalHelp
@@ -594,7 +608,7 @@ def main():
         --apktool:  use apktool in Analysis
         --unzip: use unzip in Analysis
         --regEx: with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)
-        --exiftool: use exiftool with some file formats
+        --exiftool: use exiftool with some file formats (you need first --apktool)
         --all: use all Analysis
         --man: get all the help from the program as star wars film
 
