@@ -1,7 +1,7 @@
 # AndroidSwissKnife
 Program to make static analysis for Android APKs in python
 
-'''python
+```python
 /androidSwissKnife.py [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--all]
 -a:     apk file in your directory or absolute path
 -o:     Name for output directories
@@ -13,9 +13,9 @@ Program to make static analysis for Android APKs in python
 --man: get all the help from the program as star wars film
 
 Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
-'''
+```
 
-'''python
+```python
 All help is here...
 
 First use: --apktool
@@ -44,9 +44,9 @@ Now let's going to show some files can have interesting code.
 Final Use: --all
 
 Everything put together, live of color and music.
-'''
+```
 
-'''python
+```python
 
 #about me and program
 programmer = "Fare9"
@@ -90,6 +90,6 @@ banner = '''
                         VERSION: %s
                         PROGRAMMER: %s
 '''%(WARNING,ENDC,WARNING,ENDC,WARNING,ENDC,WARNING,ENDC,FAIL,ENDC,WARNING,ENDC,str(version),programmer)
-'''
+```
 
 Follow the straw hat Pirates
