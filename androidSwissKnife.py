@@ -673,7 +673,7 @@ def main():
         Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
     '''
     for index in range(len(sys.argv)):
-        if sys.arv[index] == '--install':
+        if sys.argv[index] == '--install':
             install()
             sys.exit(0)
         if sys.argv[index] == '--man':
