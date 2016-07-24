@@ -162,6 +162,7 @@ import sys
 import time
 import random
 import signal
+import sqlite3
 
 ####################################
 # global variables for input
@@ -205,6 +206,7 @@ are stored in .so files and start by Java_ . Then that functions could be
 called from app code. New feature that use objdump to get assembly code.
 If you added --exiftool flag with --apktool we will extract some meta-data
 from some files with special extension.
+New feature to find databases (sqlite) show tables and schemas from tables.
 
 Second use: --unzip
 
@@ -305,6 +307,9 @@ def createApktoolFunc(file):
         if exiftoolUse:
             extractMetaData(outputFile)
             input("[!] Press enter")
+
+        readDatabases(outputFile)
+        input("[!] Press enter")
     except Exception as e:
         printDebug("[Debug] Error: "+str(e))
         print("[-] Maybe you need apktool...")
@@ -421,6 +426,32 @@ def readLibraries(directory):
                     statement = 'i686-linux-android-objdump -d '+pathFile+' > '+file+'.txt'
                     os.system(statement)
                 #end if
+    print('[+] Returning to directory: '+actualDirectory)
+    os.chdir(actualDirectory)
+
+def readDatabases(directory):
+
+    actualDirectory = os.getcwd() 
+
+    print('[+] Change directory to: '+directory)
+    os.chdir(directory)
+
+    for root,dirs,files in os.walk('.'):
+        for file in files:
+            if file.endswith('.db') or file.endswith('.sqlite'):
+                pathFile = os.path.join(root,file)
+
+                print("[!] DataBase: "+pathFile)
+                #create connection and execute sqlite queries
+                con = sqlite3.connect(pathFile)
+                cursor = con.cursor()
+                tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
+                for table in tables:
+                    print("\t[+] Table: "+table[0])
+                    columns = cursor.execute("SELECT * FROM "+table[0]+";").description
+                    for column in columns:
+                        print("\t\t[+] Column: "+column[0])
+
     print('[+] Returning to directory: '+actualDirectory)
     os.chdir(actualDirectory)
 
