@@ -2,20 +2,24 @@
 Program to make static analysis for Android APKs in python
 
 ```python
-/androidSwissKnife.py [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--all]
--a:     apk file in your directory or absolute path
--o:     Name for output directories
---apktool:  use apktool in Analysis
---unzip: use unzip in Analysis
---regEx: with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)
---exiftool: use exiftool with some file formats (you need first --apktool)
---all: use all Analysis
---man: get all the help from the program as star wars film
+help = '''
+        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--all]
+        --install: To install some necessary tools
+        -a:     apk file in your directory or absolute path
+        -o:     Name for output directories
+        --apktool:  use apktool in Analysis
+        --unzip: use unzip in Analysis
+        --regEx: with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)
+        --exiftool: use exiftool with some file formats (you need first --apktool)
+        --all: use all Analysis
+        --man: get all the help from the program as star wars film
 
-Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
+        Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
+    '''
 ```
 
 ```python
+totalHelp = '''
 All help is here...
 
 First use: --apktool
@@ -26,9 +30,10 @@ When finished the process of descompressing with apktool, we will read the
 AndroidManifest.xml and show some strange data (or not).
 After that we will read libraries in apk to find some function that
 are stored in .so files and start by Java_ . Then that functions could be
-called from app code.
+called from app code. New feature that use objdump to get assembly code.
 If you added --exiftool flag with --apktool we will extract some meta-data
 from some files with special extension.
+New feature to find databases (sqlite) show tables and schemas from tables.
 
 Second use: --unzip
 
@@ -39,11 +44,15 @@ Then we will show the certificate from the apk (not good quality but
 you will have it in terminal)
 Then list assets directory, maybe some cool things can be found here.
 Now let's going to show some files can have interesting code.
+Finally show some strings in files (for now URLs), you can add some
+Regular Expression
 
 
 Final Use: --all
 
 Everything put together, live of color and music.
+'''
+
 ```
 
 ```python
