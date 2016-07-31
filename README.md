@@ -2,8 +2,8 @@
 Program to make static analysis for Android APKs in python
 
 ```python
-help = '''
-        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--all]
+    help = '''
+        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all]
         --install: To install some necessary tools
         -a:     apk file in your directory or absolute path
         -o:     Name for output directories
@@ -11,6 +11,8 @@ help = '''
         --unzip: use unzip in Analysis
         --regEx: with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)
         --exiftool: use exiftool with some file formats (you need first --apktool)
+        --jadx: use jadx to try to get source code
+        --opcodes: Get information from opcodes
         --all: use all Analysis
         --man: get all the help from the program as star wars film
 
@@ -47,6 +49,17 @@ Now let's going to show some files can have interesting code.
 Finally show some strings in files (for now URLs), you can add some
 Regular Expression
 
+Third use: --jadx
+
+If you want to try to get java code, we will use jadx to get it. 
+It's not better than smali, but If it works you will have source code
+
+Fourth use: --opcodes
+
+Get all instructions, operands used in classes and methods in the bytecode in opcode-name.txt
+Get headers of classes and methods in summary-name.txt
+Get aditional information about headers like classes' id and superclasses... in sumaryDetails-name.txt
+Get the receivers from code that are in AndroidManifest and not. (ORIGINAL IDEA: https://github.com/AndroidWordMalware/malware-samples/blob/master/tools/receiversFinder.py)
 
 Final Use: --all
 
