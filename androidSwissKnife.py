@@ -22,14 +22,6 @@ ENDC    = '\033[0m'
 
 bannerP = [
     '''
-   _____              .___             .__    .___                 .__                 __          .__  _____       
-  /  _  \   ____    __| _/______  ____ |__| __| _/   ________  _  _|__| ______ ______ |  | __ ____ |__|/ ____\____  
- /  /_\  \ /    \  / __ |\_  __ \/  _ \|  |/ __ |   /  ___/\ \/ \/ /  |/  ___//  ___/ |  |/ //    \|  \   __\/ __ \ 
-/    |    \   |  \/ /_/ | |  | \(  <_> )  / /_/ |   \___ \  \     /|  |\___ \ \___ \  |    <|   |  \  ||  | \  ___/ 
-\____|__  /___|  /\____ | |__|   \____/|__\____ |  /____  >  \/\_/ |__/____  >____  > |__|_ \___|  /__||__|  \___  >
-        \/     \/      \/                      \/       \/                 \/     \/       \/    \/              \/ 
-    ''',
-    '''
      ___      .__   __.  _______  .______        ______    __   _______     
     /   \     |  \ |  | |       \ |   _  \      /  __  \  |  | |       \    
    /  ^  \    |   \|  | |  .--.  ||  |_)  |    |  |  |  | |  | |  .--.  |   
@@ -182,6 +174,11 @@ unzipUse = False
 ## use exiftool in Analysis
 exiftoolUse = False 
 
+## use jadx in Analysis
+jadxUse = False
+
+## use dexdump in Analysis
+opcodesUse = False
 
 ## regular expression for strings function
 regularExpresion = ''
@@ -220,6 +217,17 @@ Now let's going to show some files can have interesting code.
 Finally show some strings in files (for now URLs), you can add some
 Regular Expression
 
+Third use: --jadx
+
+If you want to try to get java code, we will use jadx to get it. 
+It's not better than smali, but If it works you will have source code
+
+Fourth use: --opcodes
+
+Get all instructions, operands used in classes and methods in the bytecode in opcode-name.txt
+Get headers of classes and methods in summary-name.txt
+Get aditional information about headers like classes' id and superclasses... in sumaryDetails-name.txt
+Get the receivers from code that are in AndroidManifest and not. (ORIGINAL IDEA: https://github.com/AndroidWordMalware/malware-samples/blob/master/tools/receiversFinder.py)
 
 Final Use: --all
 
@@ -258,7 +266,7 @@ def install():
     os.system("git clone https://github.com/skylot/jadx.git")
     os.chdir("jadx")
     os.system("./gradlew dist")
-    os.system("ln -s $PWD/build/jadx/bin/jadx /usr/bin/jadx")
+    os.system("ln -s $PWD/build/jadx/bin/jadx /usr/bin/jadx-script")
     os.system("ln -s $PWD/build/jadx/bin/jadx-gui /usr/bin/jadx-gui")
 
     os.chdir("..")#Go to Tools
@@ -268,6 +276,12 @@ def install():
 
     print("[+] Installing unzip (if you don't have it yet)")
     os.system("sudo apt-get install unzip")
+
+    print('[+] Installing pip3 ')
+    os.system("sudo apt-get install python3-pip")
+
+    print('[+] Installing libraries')
+    os.system("pip3 install bytecode")
 
     print("[!] Please Install at your own Android SDK and NDK from Android webpage")
 
@@ -433,6 +447,7 @@ def readDatabases(directory):
 
     actualDirectory = os.getcwd() 
 
+    print('[+] Let\'s going to read databases')
     print('[+] Change directory to: '+directory)
     os.chdir(directory)
 
@@ -579,6 +594,137 @@ def showStrings(directory,regEx):
                             os.system("cat "+os.path.join(root,file)+" | egrep "+regEx)
 ###########################################################################
 
+#################################FOR JADX##################################
+def jadxFunc(file):
+    global outputName
+
+    print("[+] Creating directory from apk to jadx output...")
+    actualDirectory = os.getcwd() #get actual directory
+
+    # First take a look if path is relative or absolute
+    isRelative = os.path.isabs(file)
+
+    if isRelative:
+        # if relative, well get absolute path
+        file = os.path.abspath(file)
+
+    #create name directory as: actualDirectory/apktool-outputName
+    outputFile = actualDirectory + "/" + "jadx-" + outputName
+    sentence = 'jadx-script '+' -d '+outputFile +" "+ file
+
+    try:
+        os.system(sentence)
+        input("[!] Press enter")
+    except Exception as e:
+        printDebug("[Debug] Error: "+str(e))
+        print("[-] Maybe you need jadx-script (try to use install function)...")
+
+###################################FOR DEXDUMP#############################
+import xml.etree.ElementTree as ET
+import subprocess # for data from files
+def opcodesFunc(file):
+    global outputName
+
+    print("[+] Creating files from apk to dexdump output...")
+    actualDirectory = os.getcwd() #get actual directory
+
+    # First take a look if path is relative or absolute
+    isRelative = os.path.isabs(file)
+
+    if isRelative:
+        # if relative, well get absolute path
+        file = os.path.abspath(file)
+
+    print('[+] Creating opcodes file...')
+    outputFile = actualDirectory + "/" + "opcode-" + outputName +".txt"
+    sentence = 'dexdump '+' -d '+file + ' > '+outputFile
+
+    try:
+        os.system(sentence)
+        input("[!] Press enter")
+    except Exception as e:
+        printDebug("[Debug] Error: "+str(e))
+        print("[-] Maybe you need dexdump...")
+
+    print('[+] Creating headers file...')
+    outputFile = actualDirectory + "/" + "summary-" + outputName +".txt"
+    sentence = 'dexdump '+' -f '+file + ' > '+outputFile
+
+    try:
+        os.system(sentence)
+        input("[!] Press enter")
+    except Exception as e:
+        printDebug("[Debug] Error: "+str(e))
+        print("[-] Maybe you need dexdump...")
+
+    print('[+] Creating aditional informations about headers file...')
+    outputFile = actualDirectory + "/" + "summaryDetails-" + outputName +".txt"
+    sentence = 'dexdump '+' -f '+file + ' > '+outputFile
+
+    try:
+        os.system(sentence)
+        input("[!] Press enter")
+    except Exception as e:
+        printDebug("[Debug] Error: "+str(e))
+        print("[-] Maybe you need dexdump...")
+
+    #### Now get receiver from androidManifest and Code
+    # First from code
+    ReceiverCode = list()
+
+    command = "dexdump -i -l xml " + file
+    output = subprocess.check_output(command, shell=True)
+    xml = ET.fromstring(output)
+
+    for node in xml.iter("class"): #iterate from all xml tree
+        # Look for BroadcastReceiver
+        if node.attrib["extends"]=="android.content.BroadcastReceiver":
+            package = ""
+            for child in node.iter("constructor"):
+                package = child.attrib["type"]
+            # for every BroadcastReceiver put into the list
+            ReceiverCode.append(package + "." + node.attrib["name"])
+
+    ReceiverAndroidManifest = list()    
+    # Create "AndroidManifest.xml file"
+    outputManifestFile = "AndroidManifest.xml.tmp"
+    
+    # Fixed problems to use with python3
+    command = "python manifestDecoder.py " + file
+    os.system(command)
+
+    command = "cat " + outputManifestFile + " | grep manifest | sed -nE 's/.*package=\"([^\"]+)\".*/\\1/p'"
+    package = subprocess.check_output(command, shell=True)#.replace("\n", "")
+    package = str(package).replace("\n","")
+
+    command = "cat " + outputManifestFile + " | grep " + "receiver" + " | sed -nE 's/.*" + "name" + "=\"([^\"]+)\".*/\\1/p'"
+    elements = subprocess.check_output(command, shell=True)
+    elements = str(elements).split("\n")
+    for element in elements:
+        if element and element.strip():
+            if(element.startswith(".")):
+                ReceiverAndroidManifest.append(package + element)
+            else:
+                ReceiverAndroidManifest.append(element)
+
+    os.remove(outputManifestFile)
+
+    print('[+] Receivers in code from hexdump: ')
+    for rc in ReceiverCode:
+        print('\t[+] '+rc)
+    print('[+] Receivers in AndroidManifest: ')
+    for ra in ReceiverAndroidManifest:
+        print('\t[+] '+ra)
+
+    print('[+] Receivers that are in code but not in AndroidManifest: ')
+    for rc in ReceiverCode:
+        found = False
+        for ra in ReceiverAndroidManifest:
+            if (rc.startswith(ra)):
+                found = True
+                break
+        if not found:
+            print('\t[+] '+rc)
 ###################################Exiftool################################
 def extractMetaData(directory):
     '''
@@ -618,6 +764,7 @@ def extractMetaData(directory):
             for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.jpg'):
+                        print("[+] Showing metadata for: "+os.path.join(root,file))
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -626,6 +773,7 @@ def extractMetaData(directory):
             for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.png'):
+                        print("[+] Showing metadata for: "+os.path.join(root,file))
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -634,6 +782,7 @@ def extractMetaData(directory):
             for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.pdf'):
+                        print("[+] Showing metadata for: "+os.path.join(root,file))
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -642,6 +791,7 @@ def extractMetaData(directory):
             for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.csv'):
+                        print("[+] Showing metadata for: "+os.path.join(root,file))
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -650,6 +800,7 @@ def extractMetaData(directory):
             for root,dirs,files in os.walk('.'):
                 for file in files:
                     if file.endswith('.txt'):
+                        print("[+] Showing metadata for: "+os.path.join(root,file))
                         statement = 'exiftool '+os.path.join(root,file)
                         os.system(statement)
                         time.sleep(0.5)
@@ -662,6 +813,8 @@ def extractMetaData(directory):
 
 
 ###########################################################################
+
+
 
 def handler(signum,frame):
     global totalHelp
@@ -686,11 +839,13 @@ def main():
     global unzipUse
     global exiftoolUse
     global regularExpresion
+    global jadxUse
+    global opcodesUse
     global allReal 
     
 
     help = '''
-        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--all]
+        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all]
         --install: To install some necessary tools
         -a:     apk file in your directory or absolute path
         -o:     Name for output directories
@@ -698,6 +853,8 @@ def main():
         --unzip: use unzip in Analysis
         --regEx: with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)
         --exiftool: use exiftool with some file formats (you need first --apktool)
+        --jadx: use jadx to try to get source code
+        --opcodes: Get information from opcodes
         --all: use all Analysis
         --man: get all the help from the program as star wars film
 
@@ -722,8 +879,13 @@ def main():
             exiftoolUse = True
         if sys.argv[index] == '--regEx':
             regularExpresion = sys.argv[index+1]
+        if sys.argv[index] == '--jadx':
+            jadxUse = True
+        if sys.argv[index] == '--opcodes':
+            opcodesUse = True
         if sys.argv[index] == '--all':
             allReal = True
+            exiftoolUse = True
 
     if apkFile == '':
         print(help)
@@ -732,19 +894,24 @@ def main():
         print(help)
         sys.exit(0)
 
-    if (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not allReal):
+    if (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not allReal):
         print(help)
         sys.exit(0)
 
     if allReal:
         createApktoolFunc(apkFile)
         unzipFunc(apkFile)
+        jadxFunc(apkFile)
+        opcodesFunc(apkFile)
     else:
         if apktoolUse:
             createApktoolFunc(apkFile)
         if unzipUse:
             unzipFunc(apkFile)
-        
+        if jadxUse:
+            jadxFunc(apkFile)
+        if opcodesUse:
+            opcodesFunc(apkFile)
 
 if __name__ == "__main__":
     print(random.choice(bannerP))
