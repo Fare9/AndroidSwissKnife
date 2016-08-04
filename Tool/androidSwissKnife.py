@@ -262,6 +262,7 @@ def install():
     print("[+] Now you can call the tool anywhere with: androidSwissKnife")
     print("[+] Going to Directory Tools")
     os.chdir("Tools")
+    
 
     print("[+] Installing last version of apktool")
     os.system("wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.1.1.jar")
@@ -270,16 +271,17 @@ def install():
 
     os.system("ln -sf $PWD/apktool_2.1.1.jar /usr/bin/apktool")
 
+
     print("[+] Installing last version of jadx")
 
     os.system("git clone https://github.com/skylot/jadx.git")
     os.chdir("jadx")
+    
     os.system("./gradlew dist")
     os.system("ln -s $PWD/build/jadx/bin/jadx /usr/bin/jadx-script")
     os.system("ln -s $PWD/build/jadx/bin/jadx-gui /usr/bin/jadx-gui")
-
+    
     os.chdir("..")#Go to Tools
-
     print("[+] Installing exiftool")
     os.system("sudo apt-get install exiftool")
 
@@ -291,9 +293,11 @@ def install():
 
     print('[+] Installing libraries')
     os.system("pip3 install bytecode")
+    
+    os.system("sudo apt-get install lib32z1 lib32stdc++6")
 
     print("[!] Please Install at your own Android SDK and NDK from Android webpage")
-
+    print("\t[+] Then add bin and tools folders from  sdk and ndk to /usr/bin path")
     print("[+] Returning to: "+actualDirectory)
 
 ##################################### FOR APKTOOL ###################################
