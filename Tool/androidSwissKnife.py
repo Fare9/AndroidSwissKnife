@@ -338,6 +338,7 @@ def createApktoolFunc(file):
         readDatabases(outputFile)
         input("[!] Press enter")
     except Exception as e:
+        os.chdir(actualDirectory)
         printDebug("[Debug] Error: "+str(e))
         print("[-] Maybe you need apktool...")
 
@@ -420,6 +421,8 @@ def readLibraries(directory):
     '''
         Process to read library from android native libraries, discover
         Java functions and finally dissassembling it
+
+        This extract Native code(arm,intel or mips).
     '''
     global WARNING
     global ENDC
@@ -450,14 +453,16 @@ def readLibraries(directory):
                     statement = 'i686-linux-android-objdump -d '+pathFile+' > '+file+'.txt'
                     os.system(statement)
                 elif "mips" in pathFile: #just for Rico's mind
-                    statement = 'i686-linux-android-objdump -d '+pathFile+' > '+file+'.txt'
+                    statement = 'mipsellinux-android-objdump -d '+pathFile+' > '+file+'.txt'
                     os.system(statement)
                 #end if
     print('[+] Returning to directory: '+actualDirectory)
     os.chdir(actualDirectory)
 
 def readDatabases(directory):
-
+    '''
+        Extract schema from SQLite Database
+    '''
     actualDirectory = os.getcwd() 
 
     print('[+] Let\'s going to read databases')
@@ -515,6 +520,7 @@ def unzipFunc(file):
         input("[!] Press enter")
         showStrings(outputFile,regularExpresion)
     except Exception as e:
+        os.chdir(actualDirectory)
         printDebug("[Debug] Error: "+str(e))
         print("[-] Maybe you need unzip...")
 
@@ -580,9 +586,9 @@ def showStrings(directory,regEx):
         Module to show strings from .dex file or
         files in general with some regular Expressions
     '''
-    javaclassRegEx = "L[^;]+?;"
-    urlRegEx = "https?:"
-    urlBase64RegEx = "aHR0cDo|aHR0cHM6L"
+    javaclassRegEx = '"L[^;]+?;"' #Objects or classes (start by L)
+    urlRegEx = '"https?:"' #http or https
+    urlBase64RegEx = '"aHR0cDo|aHR0cHM6L"' #http or https in base64
 
     actualDirectory = os.getcwd()
 
@@ -628,9 +634,19 @@ def jadxFunc(file):
     try:
         os.system(sentence)
         input("[!] Press enter")
+
+        #show methods from files
+        os.chdir(outputFile)
+        for root,dirs,files in os.walk('.'):
+                for file in files:
+                    if file.endswith('.java'):
+                        print('\t\t[+] SCANNING METHODS FROM: '+os.path.join(root,file))
+                        os.system("cat "+os.path.join(root,file)+" | egrep "+'"(public|protected|private) .+\(*\)"')
+
     except Exception as e:
         printDebug("[Debug] Error: "+str(e))
         print("[-] Maybe you need jadx-script (try to use install function)...")
+    os.chdir(actualDirectory)
 
 ###################################FOR DEXDUMP#############################
 import xml.etree.ElementTree as ET
