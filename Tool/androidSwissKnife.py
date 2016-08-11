@@ -183,6 +183,9 @@ opcodesUse = False
 ## regular expression for strings function
 regularExpresion = ''
 
+## Get jar
+getjar = False
+
 ## use for all analysis
 allReal = False
 
@@ -228,6 +231,13 @@ Get all instructions, operands used in classes and methods in the bytecode in op
 Get headers of classes and methods in summary-name.txt
 Get aditional information about headers like classes' id and superclasses... in sumaryDetails-name.txt
 Get the receivers from code that are in AndroidManifest and not. (ORIGINAL IDEA: https://github.com/AndroidWordMalware/malware-samples/blob/master/tools/receiversFinder.py)
+
+Fifth use: --get-jar
+
+Get jar from apk with dex2jar, then get a folder with the jar file
+unzipped, you can create java file to call or test classes from this 
+jar file.
+
 
 Final Use: --all
 
@@ -755,6 +765,42 @@ def opcodesFunc(file):
                 break
         if not found:
             print('\t[+] '+rc)
+
+###################################For dex2jar#############################
+def getjarFunc(file):
+    '''
+        Function to call dex2jar
+    '''
+
+    print ("[+] Creating Directory and jar from apk...")
+    actualDirectory = os.getcwd() #get actual directory
+
+    # First take a look if path is relative or absolute
+    isRelative = os.path.isabs(file)
+
+    if isRelative:
+        # if relative, well get absolute path
+        file = os.path.abspath(file)
+
+
+    nameNoAPK = file.replace('.apk','') #name without .apk
+    nameDEX2JAR = nameNoAPK + '_dex2jar.jar' #name from dex2jar output
+
+    print("[+] Creating file "+nameDEX2JAR)
+    sentence = 'dex2jar '+file
+    os.system(sentence)
+
+    print("[+] Creating folder "+nameNoAPK+'_CLASS and change directory')
+    os.mkdir(nameNoAPK+'_CLASS')
+    os.chdir(nameNoAPK+'_CLASS')
+
+    print("[+] Creating classes files")
+    sentence = 'unzip ../'+nameDEX2JAR
+    os.system(sentence)
+
+    print("[+] Returning to: "+actualDirectory)
+    os.chdir(actualDirectory)
+    
 ###################################Exiftool################################
 def extractMetaData(directory):
     '''
@@ -872,6 +918,7 @@ def main():
     global jadxUse
     global opcodesUse
     global allReal 
+    global getjar
     
 
     help = '''
@@ -885,6 +932,7 @@ def main():
         --exiftool: use exiftool with some file formats (you need first --apktool)
         --jadx: use jadx to try to get source code
         --opcodes: Get information from opcodes
+        --get-jar: Get jar from apk and finally the .class in a folder
         --all: use all Analysis
         --man: get all the help from the program as star wars film
 
@@ -913,6 +961,8 @@ def main():
             jadxUse = True
         if sys.argv[index] == '--opcodes':
             opcodesUse = True
+        if sys.argv[index] == '--get-jar':
+            getjar = True
         if sys.argv[index] == '--all':
             allReal = True
             exiftoolUse = True
@@ -924,7 +974,7 @@ def main():
         print(help)
         sys.exit(0)
 
-    if (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not allReal):
+    if (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar )and (not allReal):
         print(help)
         sys.exit(0)
 
@@ -933,6 +983,7 @@ def main():
         unzipFunc(apkFile)
         jadxFunc(apkFile)
         opcodesFunc(apkFile)
+        getjarFunc(apkFile)
     else:
         if apktoolUse:
             createApktoolFunc(apkFile)
@@ -942,6 +993,8 @@ def main():
             jadxFunc(apkFile)
         if opcodesUse:
             opcodesFunc(apkFile)
+        if getjar:
+            getjarFunc(apkFile)
 
 if __name__ == "__main__":
     print(random.choice(bannerP))
