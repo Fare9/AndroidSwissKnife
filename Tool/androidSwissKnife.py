@@ -275,7 +275,7 @@ def install():
     
 
     print("[+] Installing last version of apktool")
-    os.system("wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.1.1.jar")
+    os.system("wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.2.0.jar")
 
     os.system("chmod +x ./apktool_2.1.1.jar")
 
