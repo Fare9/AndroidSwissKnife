@@ -186,6 +186,11 @@ regularExpresion = ''
 ## Get jar
 getjar = False
 
+## Variables and flags for apk create with apktool
+createAPK = False
+folderWithCode = ''
+apkOutputName = ''
+
 ## use for all analysis
 allReal = False
 
@@ -277,9 +282,9 @@ def install():
     print("[+] Installing last version of apktool")
     os.system("wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.2.0.jar")
 
-    os.system("chmod +x ./apktool_2.1.1.jar")
+    os.system("chmod +x ./apktool_2.2.0.jar")
 
-    os.system("ln -sf $PWD/apktool_2.1.1.jar /usr/bin/apktool")
+    os.system("ln -sf $PWD/apktool_2.2.0.jar /usr/bin/apktool")
 
 
     print("[+] Installing last version of jadx")
@@ -800,7 +805,25 @@ def getjarFunc(file):
 
     print("[+] Returning to: "+actualDirectory)
     os.chdir(actualDirectory)
-    
+
+###################################To Create apk from apktool folder#######
+def createAPKFunc(folder,apkName):
+
+    print('[+] Creating temporary file before sign apk')
+    sentence = 'apktool b '+folder+' -o changed_apk.apk'
+    os.system(sentence)
+
+    files = os.listdir('.')
+
+    if 'changed_apk.apk' in files:
+        print('[+] Creating signed apk')
+        sentence = 'd2j-apk-sign -f -o '+apkName+' changed_apk.apk'
+        os.system(sentence)
+        print('[+] Removing temporary file')
+        os.remove('changed_apk.apk')
+        print('[+] Well now you can use your new apk')
+    else:
+        print('[-] There was a problem with apktool and temporary file')
 ###################################Exiftool################################
 def extractMetaData(directory):
     '''
@@ -919,10 +942,14 @@ def main():
     global opcodesUse
     global allReal 
     global getjar
+    global createAPK
+    global folderWithCode
+    global apkOutputName
+    
     
 
     help = '''
-        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all]
+        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all] [--create-apk -f <folder from apktool> -apk <name for apk>]
         --install: To install some necessary tools
         -a:     apk file in your directory or absolute path
         -o:     Name for output directories
@@ -934,6 +961,7 @@ def main():
         --opcodes: Get information from opcodes
         --get-jar: Get jar from apk and finally the .class in a folder
         --all: use all Analysis
+        --create-apk: generate an apk, from apktool folder
         --man: get all the help from the program as star wars film
 
         Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
@@ -963,28 +991,47 @@ def main():
             opcodesUse = True
         if sys.argv[index] == '--get-jar':
             getjar = True
+        if sys.argv[index] == '--create-apk':
+            createAPK = True
+        if sys.argv[index] == '-f':
+            folderWithCode = str(sys.argv[index+1])
+        if sys.argv[index] == '-apk':
+            apkOutputName = str(sys.argv[index+1])
         if sys.argv[index] == '--all':
             allReal = True
             exiftoolUse = True
 
-    if apkFile == '':
-        print(help)
-        sys.exit(0)
-    if outputName == '':
+    if (not createAPK) and (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar )and (not allReal):
         print(help)
         sys.exit(0)
 
-    if (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar )and (not allReal):
-        print(help)
-        sys.exit(0)
 
+    if createAPK:
+        if (folderWithCode == '' ) or (apkOutputName == ''):
+            print(help)
+            sys.exit(0)
+        createAPKFunc(folderWithCode,apkOutputName)
+            
     if allReal:
+        if apkFile == '':
+            print(help)
+            sys.exit(0)
+        if outputName == '':
+            print(help)
+            sys.exit(0)
+
         createApktoolFunc(apkFile)
         unzipFunc(apkFile)
         jadxFunc(apkFile)
         opcodesFunc(apkFile)
         getjarFunc(apkFile)
     else:
+        if apkFile == '':
+            print(help)
+            sys.exit(0)
+        if outputName == '':
+            print(help)
+            sys.exit(0)
         if apktoolUse:
             createApktoolFunc(apkFile)
         if unzipUse:
