@@ -626,6 +626,9 @@ def showStrings(directory,regEx):
                         os.system("cat "+os.path.join(root,file)+" | egrep "+urlBase64RegEx)
                         if regEx != '':
                             os.system("cat "+os.path.join(root,file)+" | egrep "+regEx)
+
+    print("[+] Returning to Directory: "+actualDirectory)
+    os.chdir(actualDirectory)
 ###########################################################################
 
 #################################FOR JADX##################################
