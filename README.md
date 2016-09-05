@@ -1,6 +1,7 @@
 # AndroidSwissKnife
 Program to make static analysis for Android APKs in python
-
+If you want to ask me for changes you want to add (for example in AndroidManifest analysis), 
+write to my email address: farenain9@gmail.com
 ```python
     help = '''
         ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all]
