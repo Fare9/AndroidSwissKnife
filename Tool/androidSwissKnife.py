@@ -468,7 +468,7 @@ def readLibraries(directory):
                     statement = 'i686-linux-android-objdump -d '+pathFile+' > '+file+'.txt'
                     os.system(statement)
                 elif "mips" in pathFile: #just for Rico's mind
-                    statement = 'mipsellinux-android-objdump -d '+pathFile+' > '+file+'.txt'
+                    statement = 'mipsel-linux-android-objdump -d '+pathFile+' > '+file+'.txt'
                     os.system(statement)
                 #end if
     print('[+] Returning to directory: '+actualDirectory)
