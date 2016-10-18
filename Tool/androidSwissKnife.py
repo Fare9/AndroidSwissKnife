@@ -191,6 +191,10 @@ createAPK = False
 folderWithCode = ''
 apkOutputName = ''
 
+## Variables and flags for adb
+adbConnect = False
+portConnect = ''
+
 ## use for all analysis
 allReal = False
 
@@ -249,7 +253,6 @@ Final Use: --all
 Everything put together, live of color and music.
 '''
 ######################################
-
 def printDebug(string):
 
     global debug
@@ -293,7 +296,7 @@ def install():
     os.chdir("jadx")
     
     os.system("./gradlew dist")
-    os.system("ln -s $PWD/build/jadx/bin/jadx /usr/bin/jadx-script")
+    os.system("ln -s $PWD/build/jadx/bin/jadx /usr/bin/jadx")
     os.system("ln -s $PWD/build/jadx/bin/jadx-gui /usr/bin/jadx-gui")
     
     os.chdir("..")#Go to Tools
@@ -312,7 +315,25 @@ def install():
     os.system("sudo apt-get install lib32z1 lib32stdc++6")
 
     print("[!] Please Install at your own Android SDK and NDK from Android webpage")
-    print("\t[+] Then add bin and tools folders from  sdk and ndk to /usr/bin path")
+    print("\t[+] Then add bin and tools folders from  sdk and ndk to te variable PATH")
+    
+    example = '''
+    PATH=$PATH:/usr/local/android-studio/bin
+    PATH=$PATH:/usr/local/android-ndk-r12b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin
+    PATH=$PATH:/usr/local/android-ndk-r12b/toolchains/x86-4.9/prebuilt/linux-x86_64/bin
+    PATH=$PATH:/usr/local/android-ndk-r12b/toolchains/mipsel-linux-android-4.9/prebuilt/linux-x86_64/bin
+    PATH=$PATH:/root/Android/Sdk/tools
+    PATH=$PATH:/root/Android/Sdk/platform-tools
+    PATH=$PATH:/root/Android/Sdk/build-tools/24.0.0
+    '''
+    print("\t[+] Here an example to add to your .bashrc file: \n"+example)
+    
+    print("###################################################")
+    print("\n\n\tFor Dynamic Analysis:")
+    print("Once you've got Android Studio, you can add SmaliIdea for smali support")
+    print("Open Android Studio, go to Settings->Plugins and click \"Install plugin from disk\"")
+    print("And install Smalidea zip from androidSwissKnife folder, then click Apply")
+    print("Smalidea from JesusFreke: https://github.com/JesusFreke")
     print("[+] Returning to: "+actualDirectory)
 
 ##################################### FOR APKTOOL ###################################
@@ -647,7 +668,7 @@ def jadxFunc(file):
 
     #create name directory as: actualDirectory/apktool-outputName
     outputFile = actualDirectory + "/" + "jadx-" + outputName
-    sentence = 'jadx-script '+' -d '+outputFile +" "+ file
+    sentence = 'jadx '+' -d '+outputFile +" "+ file
 
     try:
         os.system(sentence)
@@ -663,7 +684,7 @@ def jadxFunc(file):
 
     except Exception as e:
         printDebug("[Debug] Error: "+str(e))
-        print("[-] Maybe you need jadx-script (try to use install function)...")
+        print("[-] Maybe you need jadx (try to use install function)...")
     os.chdir(actualDirectory)
 
 ###################################FOR DEXDUMP#############################
@@ -912,7 +933,11 @@ def extractMetaData(directory):
     finally:
         print('[+] Returning to: '+actualDirectory)
         os.chdir(actualDirectory)
-
+#######################################FOR ADB#############################
+def adbConnectFunc(port):
+    print('[+] Connecting to android device by: '+port)
+    os.system("adb connect "+port)
+    
 
 ###########################################################################
 
@@ -948,11 +973,12 @@ def main():
     global createAPK
     global folderWithCode
     global apkOutputName
-    
+    global adbConnect
+    global portConnect
     
 
     help = '''
-        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all] [--create-apk -f <folder from apktool> -apk <name for apk>]
+        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all] [--create-apk -f <folder from apktool> -apk <name for apk>] [--connect <IP:port>]
         --install: To install some necessary tools
         -a:     apk file in your directory or absolute path
         -o:     Name for output directories
@@ -963,6 +989,7 @@ def main():
         --jadx: use jadx to try to get source code
         --opcodes: Get information from opcodes
         --get-jar: Get jar from apk and finally the .class in a folder
+        --connect: Connect to android device with adb
         --all: use all Analysis
         --create-apk: generate an apk, from apktool folder
         --man: get all the help from the program as star wars film
@@ -1000,11 +1027,14 @@ def main():
             folderWithCode = str(sys.argv[index+1])
         if sys.argv[index] == '-apk':
             apkOutputName = str(sys.argv[index+1])
+        if sys.argv[index] == '--connect':
+            adbConnect = True
+            portConnect = str(sys.argv[index+1])
         if sys.argv[index] == '--all':
             allReal = True
             exiftoolUse = True
 
-    if (not createAPK) and (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar )and (not allReal):
+    if (not adbConnect) and (not createAPK) and (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar )and (not allReal):
         print(help)
         sys.exit(0)
 
@@ -1014,7 +1044,14 @@ def main():
             print(help)
             sys.exit(0)
         createAPKFunc(folderWithCode,apkOutputName)
-            
+        sys.exit(0)
+    
+    if adbConnect:
+        if (portConnect == '' ):
+            print(help)
+            sys.exit(0)
+        adbConnectFunc(portConnect)
+        sys.exit(0)
     if allReal:
         if apkFile == '':
             print(help)
@@ -1051,4 +1088,5 @@ if __name__ == "__main__":
     time.sleep(2)
     print (banner)
     time.sleep(1)
+
     main()
