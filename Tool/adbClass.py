@@ -9,11 +9,11 @@
     complex structure nobody can understand it.
 
     A sentence which can explain about this class:
-    
+
     "Ja hem traçat un llarg camí fins aquí, 
     I tots nosaltres portem dins dels nostres cors, 
     promeses que no podem deixar enrere" 
-                                    Mireia Garolera Marcos
+                                    Miree
 
     Original DroidBox Idea: 
         Patrik Lantz patrik@pjlantz.com and Laurent Delosieres ldelosieres@hispasec.com
