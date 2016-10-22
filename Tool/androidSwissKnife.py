@@ -5,7 +5,19 @@
     Application to use with APK to create
     files for Static analysis.
 
+    Original DroidBox Idea: 
+        Patrik Lantz patrik@pjlantz.com and Laurent Delosieres ldelosieres@hispasec.com
+        The Honeynet Project
 
+    I modified some parts from code and I use another methods for example to parse XML
+    and I have adapted to my code. My ideas added to Program:
+
+        - Start Burpsuite (I'm not owner from Burpsuite, https://portswigger.net/burp/)
+        - No need startmenu.sh, gnome-terminal will open emulator in another window
+        - Use of apktool to unzip  apk
+        - Use of BeautifulSoup to parse XML
+
+    Any suggestion please contact me in farenain9@gmail.com
 '''
 
 #about me and program
@@ -155,6 +167,10 @@ import time
 import random
 import signal
 import sqlite3
+import pprint
+
+
+import adbClass
 
 ####################################
 # global variables for input
@@ -197,6 +213,9 @@ portConnect = ''
 
 ## use for all analysis
 allReal = False
+
+## Dynamic analysis just will be dynamic analysis...
+DynamicAnalysis = False
 
 #variable for debugging
 debug = True
@@ -327,13 +346,16 @@ def install():
     PATH=$PATH:/root/Android/Sdk/build-tools/24.0.0
     '''
     print("\t[+] Here an example to add to your .bashrc file: \n"+example)
-    
+
     print("###################################################")
     print("\n\n\tFor Dynamic Analysis:")
     print("Once you've got Android Studio, you can add SmaliIdea for smali support")
     print("Open Android Studio, go to Settings->Plugins and click \"Install plugin from disk\"")
     print("And install Smalidea zip from androidSwissKnife folder, then click Apply")
     print("Smalidea from JesusFreke: https://github.com/JesusFreke")
+
+    print("[+] Installing BeautifulSoup")
+    os.system("pip3 install bs4")
     print("[+] Returning to: "+actualDirectory)
 
 ##################################### FOR APKTOOL ###################################
@@ -975,10 +997,10 @@ def main():
     global apkOutputName
     global adbConnect
     global portConnect
-    
+    global DynamicAnalysis
 
     help = '''
-        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all] [--create-apk -f <folder from apktool> -apk <name for apk>] [--connect <IP:port>]
+        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all] [--create-apk -f <folder from apktool> -apk <name for apk>] [--connect <IP:port>] [--DroidBox]
         --install: To install some necessary tools
         -a:     apk file in your directory or absolute path
         -o:     Name for output directories
@@ -993,9 +1015,12 @@ def main():
         --all: use all Analysis
         --create-apk: generate an apk, from apktool folder
         --man: get all the help from the program as star wars film
+        --DroidBox: New feature to do a dynamic analysis of the apk (It's a "wrapper" of droidbox with Burpsuite)
 
         Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
     '''
+
+    ## My own parser... I know is a bit stupid xD
     for index in range(len(sys.argv)):
         if sys.argv[index] == '--install':
             install()
@@ -1033,12 +1058,14 @@ def main():
         if sys.argv[index] == '--all':
             allReal = True
             exiftoolUse = True
+        if sys.argv[index] == '--DroidBox':
+            DynamicAnalysis = True
 
-    if (not adbConnect) and (not createAPK) and (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar )and (not allReal):
+    if (not adbConnect) and (not createAPK) and (not apktoolUse) and (not unzipUse) and (not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar )and (not allReal) and (not DynamicAnalysis):
         print(help)
         sys.exit(0)
 
-
+    ##################################### Create an apk from apktool modification smali code
     if createAPK:
         if (folderWithCode == '' ) or (apkOutputName == ''):
             print(help)
@@ -1046,12 +1073,137 @@ def main():
         createAPKFunc(folderWithCode,apkOutputName)
         sys.exit(0)
     
+    ##################################### Connect to device with adb 
     if adbConnect:
         if (portConnect == '' ):
             print(help)
             sys.exit(0)
         adbConnectFunc(portConnect)
         sys.exit(0)
+
+    ##################################### Dynamic Anaylisis function with all necessary classes
+    if DynamicAnalysis:
+        if apkFile == '':
+            print(help)
+            sys.exit(0)
+
+        # First take a look if path is relative or absolute
+        isRelative = os.path.isabs(apkFile)
+
+        if isRelative:
+            # if relative, well get absolute path
+            apkFile = os.path.abspath(apkFile)
+
+        # start burpsuite
+        prox = adbClass.Proxy()
+        prox.startBurp()
+        print(OKGREEN)
+        adbClass.progressBar()
+        print(ENDC)
+
+        emulatorName = input("[+] Give me the emulator name: ")
+
+        #create adb class
+        adbHandler = adbClass.Adb(emulator=emulatorName,proxy=prox)
+        adbHandler.startEmulator()
+
+        #create DynamicAnalyzer class
+        dynamicAnalizer = adbClass.DynamicAnalyzer(apk=apkFile)
+        dynamicAnalizer.extractingApk()
+
+        hashes = dynamicAnalizer.getHash()
+        md5 = hashes[0]
+        sha1 = hashes[1]
+        sha256 = hashes[2]
+
+        print("\n\n\n")
+        print(WARNING)
+        print("[+] Name of application: "+apkFile)
+        print("[+] MD5: "+str(md5))
+        print("[+] SHA1: "+str(sha1))
+        print("[+] SHA256: "+str(sha256))
+        print(ENDC)
+
+        print(OKBLUE)
+        print("################# DYNAMIC ANALYSIS #########################")
+        print(ENDC)
+
+        activities = dynamicAnalizer.activities
+        mainActivity = dynamicAnalizer.mainActivity
+        packages = dynamicAnalizer.packages 
+        if len(packages) > 0:
+            packages = packages[0]
+        usesPermissions = dynamicAnalizer.permissions 
+        permissions = dynamicAnalizer.outPermissions
+        receivers = dynamicAnalizer.receivers
+        recvsactions = dynamicAnalizer.recvsactions
+        print("[+] MainActivity: "+str(mainActivity))
+        print("[+] Activities: ");pprint.pprint(activities)
+        print("[+] Packages: "+str(packages))
+        print("[+] Uses-Permissions: ");pprint.pprint(usesPermissions)
+        print("[+] Permissions: ");pprint.pprint(permissions)
+        print("[+] Receivers: ");pprint.pprint(receivers)
+        print("[+] Receivers actions: ");pprint.pprint(recvsactions)
+        input()
+        # If we gonna use Logcat we need to clean the buffer
+        adbHandler.cleanAdbLogcat()
+
+        # If some error parsing AndroidManifest something strange happened, then exit
+        if mainActivity == None:
+            print("[-] No Main Activity where start...")
+            sys.exit(-1)
+        if packages == None:
+            print("[-] No Packages...")
+            sys.exit(-1)
+
+        ret = subprocess.call(['monkeyrunner', 'monkeyFaren.py', apkFile, packages, mainActivity], stderr=subprocess.PIPE, cwd=os.path.dirname(os.path.realpath(__file__)))
+
+        if ret == 1:
+            print("[-] Failed to start monkeyrunner")
+            sys.exit(1)
+
+        applicationStarted = 0
+        stringApplicationStarted = "Start proc %s" % packages
+
+        # Exec adb logcat with necessary  arguments
+        adb = adbHandler.execAdbLogcat()
+
+        logcatOutput = None
+        # Now wait for Logcat output
+        while True:
+            try:
+                logcatOutput = str(adb.stdout.readline())
+            except Exception as e:
+                print("[-] Error getting logcatOutput: "+str(e))
+                break
+            try:
+                #print(logcatOutput)
+                if not logcatOutput:
+                    raise Exception("[-] We have lost the connection with ADB, try to wait for emulator.")
+            except Exception as e:
+                print("[-] Error getting logcatOutput [2]: "+str(e))
+                break
+            try:
+                if stringApplicationStarted in logcatOutput:
+                    applicationStarted = 1
+                    break
+            except Exception as e:
+                print("[-] Error getting logcatOutput [3]: "+str(e))
+                break
+            
+
+        if applicationStarted == 0:
+            print("[-] Application didn't started")
+            # Now kill adb (It was a background process)
+            os.kill(adb.pid, signal.SIGKILL)
+            sys.exit(-1)
+
+        print(OKBLUE)
+        print("############################################################")
+        print(ENDC)
+
+        sys.exit(0)
+    ##################################### Do everything O.O
     if allReal:
         if apkFile == '':
             print(help)
@@ -1066,6 +1218,8 @@ def main():
         opcodesFunc(apkFile)
         getjarFunc(apkFile)
     else:
+
+        ############################### Function by function
         if apkFile == '':
             print(help)
             sys.exit(0)
