@@ -94,7 +94,7 @@ you can see the features of my emulator.
 ```
 
 Features for android Emulator
-<img src="./anemf.pmg" />
+<img src="./anemf.png" />
 <img src="./ASKN.png" width="672"/>
 <img src="./StrawHat.png" width="516"/>
 
