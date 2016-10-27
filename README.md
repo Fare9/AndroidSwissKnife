@@ -1,7 +1,14 @@
 # AndroidSwissKnife
-FrameWork to make static and dynamic analysis for Android APKs in Python
+
+<p>
+FrameWork to make <em>static and dynamic analysis</em> for Android APKs in Python
 If you want to ask me for changes you want to add (for example in AndroidManifest analysis), 
 write to my email address: farenain9@gmail.com
+</p>
+
+<p> Please install this version from sourceforge: <a href="https://sourceforge.net/projects/androidswissknife/files/AndroidSwissKnife.zip/download">AndroidSwissKnife</a> , in github you just have the code.
+</p>
+
 
 ```python
     help = '''
@@ -95,8 +102,12 @@ you can see the features of my emulator.
 
 Features for android Emulator
 <p></p>
+<p></p>
+
 <img src="./anemf.png" />
+<p></p>
 <img src="./ASKN.png" width="672"/>
+<p></p>
 <img src="./StrawHat.png" width="516"/>
 
 
