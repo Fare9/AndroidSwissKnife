@@ -2,7 +2,9 @@
 
 <p>
 FrameWork to make <em>static and dynamic analysis</em> for Android APKs in Python
-If you want to ask me for changes you want to add (for example in AndroidManifest analysis), 
+</p>
+<p>
+If you want to ask me for changes you want to add (for example in AndroidManifest analysis),
 write to my email address: farenain9@gmail.com
 </p>
 
