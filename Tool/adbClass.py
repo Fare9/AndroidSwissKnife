@@ -143,15 +143,29 @@ class Adb():
             self.emulator = emulator
         self.proxy = proxy
 
+    def find(self,name):
+        path = os.environ['PATH']
+        path = path.split(":")
+
+        for p in path:
+            if 'AndroidSwissKnife' in p:
+                ask = p
+
+        return (p+'/'+name)
+
     def startEmulator(self):
         """
             Start android emulator to install the apk and start analyzer
         """
-        system = os.path.abspath("images/system.img")
-        ramdisk = os.path.abspath("images/ramdisk.img")
+
+        
+        system = self.find("images/system.img")#os.path.abspath("images/system.img")
+        ramdisk = self.find("images/ramdisk.img")#os.path.abspath("images/ramdisk.img")
         sentence = 'gnome-terminal --command "emulator -avd '+self.emulator+' -http-proxy '+self.proxy.ip+':'+self.proxy.port+' -system '+system+' -ramdisk '+ramdisk+' -wipe-data -prop dalvik.vm.execution-mode=int:portable"'
         try:
             print("[+] Exec Emulator")
+            #print(sentence)
+            #input()
             os.system(sentence)
             self.correct = True
         except Exception as e:
@@ -201,6 +215,7 @@ class DynamicAnalyzer():
         try:
             manifest = None
             apkName = self.apk
+            apkName = os.path.basename(apkName)
             apkName = apkName.replace(".apk","")
 
             unzipFolder = "apktool-"+apkName
@@ -215,7 +230,7 @@ class DynamicAnalyzer():
                 subprocess.call(sentence,shell=True)
 
             manifest = open(unzipFolder+"/AndroidManifest.xml","rb")
-            bsObj = BeautifulSoup(manifest.read())
+            bsObj = BeautifulSoup(manifest.read(),'html.parser')
 
             ## Now start parsing
 

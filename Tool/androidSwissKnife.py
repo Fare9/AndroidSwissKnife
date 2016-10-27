@@ -168,7 +168,8 @@ import random
 import signal
 import sqlite3
 import pprint
-
+import json #to load logs from logcat
+import codecs
 
 import adbClass
 
@@ -270,6 +271,17 @@ jar file.
 Final Use: --all
 
 Everything put together, live of color and music.
+
+###### NEW FEATURES ########
+--create-apk
+Once you have used apktool to get smali code from an apk, you can modify it, and finally
+create another apk with your changes, you can use this feature to do it.
+
+### FINALLY DYNAMIC ANALYSIS (DroidBox Wrapper)
+--DroidBox (Original Idea https://github.com/pjlantz/droidbox/tree/master/droidbox4.1.1)
+I modified DroidBox code to this framework, I rewrite some functions to work in python3
+but nothing change from this program. You need to have an android emulator, in Readme.md
+you can see the features of my emulator.
 '''
 ######################################
 def printDebug(string):
@@ -291,12 +303,17 @@ def install():
 
     print("[+] Creating symbolic links for androidSwissKnife")
 
-    os.system("chmod +x $PWD/androidSwissKnife.py")
-    os.system("ln -sf $PWD/androidSwissKnife.py /usr/bin/androidSwissKnife")
-    os.system("chmod +x $PWD/manifestDecoder.py")
-    os.system("ln -sf $PWD/manifestDecoder.py /usr/bin/manifestDecoder.py")
+    #link actual directory to variable path
+    os.system("echo PATH=\$PATH:"+actualDirectory+" >> ~/.bashrc")
 
-    print("[+] Now you can call the tool anywhere with: androidSwissKnife")
+    
+    os.system("chmod +x $PWD/androidSwissKnife.py")
+    #os.system("ln -sf $PWD/androidSwissKnife.py /usr/bin/androidSwissKnife")
+    os.system("chmod +x $PWD/manifestDecoder.py")
+    #os.system("ln -sf $PWD/manifestDecoder.py /usr/bin/manifestDecoder.py")
+    
+
+    print("[+] Now you can call the tool anywhere with: androidSwissKnife.py")
     print("[+] Going to Directory Tools")
     os.chdir("Tools")
     
@@ -334,7 +351,7 @@ def install():
     os.system("sudo apt-get install lib32z1 lib32stdc++6")
 
     print("[!] Please Install at your own Android SDK and NDK from Android webpage")
-    print("\t[+] Then add bin and tools folders from  sdk and ndk to te variable PATH")
+    print("\t[+] Then add bin and tools folders from  sdk and ndk to the variable PATH in .bashrc")
     
     example = '''
     PATH=$PATH:/usr/local/android-studio/bin
@@ -353,7 +370,8 @@ def install():
     print("Open Android Studio, go to Settings->Plugins and click \"Install plugin from disk\"")
     print("And install Smalidea zip from androidSwissKnife folder, then click Apply")
     print("Smalidea from JesusFreke: https://github.com/JesusFreke")
-
+    print("Install Burpsuite")
+    print("Create an android emulator")
     print("[+] Installing BeautifulSoup")
     os.system("pip3 install bs4")
     print("[+] Returning to: "+actualDirectory)
@@ -1082,15 +1100,30 @@ def main():
         sys.exit(0)
 
     ##################################### Dynamic Anaylisis function with all necessary classes
+
+    # Variables to save data from analysis
+    sendsms = {}
+    phonecalls = {}
+    cryptousage = {}
+    dexclass = {}
+    dataleaks = {}
+    opennet = {}
+    sendnet = {}
+    recvnet = {}
+    closenet = {}
+    fdaccess = {}
+    servicestart = {}
+    accessedfiles = {}
+
     if DynamicAnalysis:
         if apkFile == '':
             print(help)
             sys.exit(0)
 
         # First take a look if path is relative or absolute
-        isRelative = os.path.isabs(apkFile)
+        isAbs = os.path.isabs(apkFile)
 
-        if isRelative:
+        if not isAbs:
             # if relative, well get absolute path
             apkFile = os.path.abspath(apkFile)
 
@@ -1123,7 +1156,7 @@ def main():
         print("[+] SHA1: "+str(sha1))
         print("[+] SHA256: "+str(sha256))
         print(ENDC)
-
+        time.sleep(1)
         print(OKBLUE)
         print("################# DYNAMIC ANALYSIS #########################")
         print(ENDC)
@@ -1138,13 +1171,20 @@ def main():
         receivers = dynamicAnalizer.receivers
         recvsactions = dynamicAnalizer.recvsactions
         print("[+] MainActivity: "+str(mainActivity))
+        time.sleep(1)
         print("[+] Activities: ");pprint.pprint(activities)
+        time.sleep(1)
         print("[+] Packages: "+str(packages))
+        time.sleep(1)
         print("[+] Uses-Permissions: ");pprint.pprint(usesPermissions)
+        time.sleep(1)
         print("[+] Permissions: ");pprint.pprint(permissions)
+        time.sleep(1)
         print("[+] Receivers: ");pprint.pprint(receivers)
+        time.sleep(1)
         print("[+] Receivers actions: ");pprint.pprint(recvsactions)
-        input()
+        time.sleep(1)
+        input("Press enter when Virtual Android finish loading")
         # If we gonna use Logcat we need to clean the buffer
         adbHandler.cleanAdbLogcat()
 
@@ -1198,6 +1238,180 @@ def main():
             os.kill(adb.pid, signal.SIGKILL)
             sys.exit(-1)
 
+        print("[+] Okey Application started, now start analysis")
+
+        # create thread to count number of logs and start it
+        logthread = adbClass.threadAnalyzer()
+        logthread.start()
+
+        timestamp = time.time() # get current time
+        # Finally start taking logs from logcat, we show the information as JSON
+        while 1:
+            try:
+                logcatOutput = adb.stdout.readline() 
+                if not logcatOutput:
+                    # If something went wrong raise error
+                    raise Exception("[-] We have lost the connection with ADB.")
+
+                # We have logs which start with DroidBox word
+                # We are using custom system and custom ramdisk
+                # then we have prepare applications to have this Flag
+                try:
+
+                    boxlog = logcatOutput.decode(errors='ignore').split('DroidBox:')
+                except Exception as e:
+                    print("[-] Error Decoding: "+str(e))
+                    continue
+                if len(boxlog) > 1:
+                    try:
+                        sentence = json.loads(boxlog[1])
+                        #print(sentence)
+                        # look for Dexclassloader
+                        if 'DexClassLoader' in sentence:
+                            sentence['DexClassLoader']['type'] = 'dexload'
+                            dexclass[time.time() - timestamp] = sentence['DexClassLoader']
+                            logthread.increaseLogs()
+
+                        # look for service started
+                        if 'ServiceStart' in sentence:
+                        # service started
+                            sentence['ServiceStart']['type'] = 'service'
+                            servicestart[time.time() - timestamp] = sentence['ServiceStart']
+                            logthread.increaseLogs()
+
+                        # received data from net
+                        if 'RecvNet' in sentence:
+                            host = sentence['RecvNet']['srchost']
+                            port = sentence['RecvNet']['srcport']
+                            recvdata = {'type': 'net read', 'host': host, 'port': port, 'data': sentence['RecvNet']['data']}
+                            recvnet[time.time() - timestamp] = recvdata
+                            logthread.increaseLogs()
+
+                        # fdaccess
+                        if 'FdAccess' in sentence:
+                            accessedfiles[sentence['FdAccess']['id']] = codecs.decode(sentence['FdAccess']['path'],'hex') # convert HEX to string, now we have the path
+
+                        # file read or write   
+                        if 'FileRW' in sentence:  
+                            sentence['FileRW']['path'] = codecs.decode(accessedfiles[sentence['FileRW']['id']],'hex')
+                            if sentence['FileRW']['operation'] == 'write':
+                                # if operation is write, then type is file write
+                                sentence['FileRW']['type'] = 'file write'
+                            else:
+                                # in the other hand, if it is read access
+                                sentence['FileRW']['type'] = 'file read'
+
+                            fdaccess[time.time()-timestamp] = sentence['FileRW']
+                            logthread.increaseLogs()
+
+                        # opened network connection log
+                        if 'OpenNet' in sentence:
+                            opennet[time.time()-timestamp] = sentence['OpenNet']
+                            logthread.increaseLogs()
+
+                        # closed socket
+                        if 'CloseNet' in sentence:
+                            closenet[time.time()-timestamp] = sentence['CloseNet']
+                            logthread.increaseLogs()
+
+                        # outgoing network activity log
+                        if 'SendNet' in sentence:
+                            sentence['SendNet']['type'] = 'net write'
+                            sendnet[time.time()-timestamp] = sentence['SendNet']
+                            
+                            logthread.increaseLogs()                                       
+
+                        # data leak log
+                        if 'DataLeak' in sentence:
+                            my_time = time.time()-timestamp
+                            sentence['DataLeak']['type'] = 'leak'
+                            sentence['DataLeak']['tag'] = adbClass.getTags(int(sentence['DataLeak']['tag'], 16))
+                            dataleaks[my_time] = sentence['DataLeak']
+                            logthread.increaseLogs()
+
+                            if sentence['DataLeak']['sink'] == 'Network':
+                                sentence['DataLeak']['type'] = 'net write'
+                                sendnet[my_time] = sentence['DataLeak']
+                                logthread.increaseLogs()
+
+                            elif sentence['DataLeak']['sink'] == 'File':    
+                                # If it is a file
+                                sentence['DataLeak']['path'] = codecs.decode(accessedfiles[sentence['DataLeak']['id']],'hex')
+
+                                #get if it's write or read
+                                if sentence['DataLeak']['operation'] == 'write':
+                                    sentence['DataLeak']['type'] = 'file write'
+                                else:
+                                    sentence['DataLeak']['type'] = 'file read'
+                                #add to fdaccess
+                                fdaccess[my_time] = sentence['DataLeak']
+                                logthread.increaseLogs()
+
+                            elif sentence['DataLeak']['sink'] == 'SMS':
+                                sentence['DataLeak']['type'] = 'sms'
+                                sendsms[my_time] = sentence['DataLeak']
+                                logthread.increaseLogs()
+
+                        # sent sms log
+                        if 'SendSMS' in sentence:
+                            sentence['SendSMS']['type'] = 'sms'
+                            sendsms[time.time()-timestamp] = sentence['SendSMS']
+                            logthread.increaseLogs()
+
+                        # phone call log
+                        if 'PhoneCall' in sentence:
+                            sentence['PhoneCall']['type'] = 'call'
+                            phonecalls[time.time()-timestamp] = sentence['PhoneCall']
+                            logthread.increaseLogs()
+
+                        # crypto api usage log
+                        if 'CryptoUsage' in sentence:
+                            sentence['CryptoUsage']['type'] = 'crypto'                                                                   
+                            cryptousage[time.time()-timestamp] = sentence['CryptoUsage']
+                            logthread.increaseLogs()
+                    except ValueError:
+                        pass
+            except KeyboardInterrupt as e:
+                #print("[-] Error parsing adb logcat output: "+str(e))
+                try:
+                    # If CTRL-C pressed stop thread
+                    count.stopCounting()
+                    count.join()
+                finally:
+                    break;
+
+        # KILL ADB LOGCAAAT
+        os.kill(adb.pid, signal.SIGKILL)
+        #Done? Store the objects in a dictionary, transform it in a JSON object and return it
+        output = dict()
+
+        #Sort the items by their key
+        output["dexclass"] = dexclass
+        output["servicestart"] = servicestart
+
+        output["recvnet"] = recvnet
+        output["opennet"] = opennet
+        output["sendnet"] = sendnet
+        output["closenet"] = closenet
+
+        output["accessedfiles"] = accessedfiles
+        output["dataleaks"] = dataleaks
+
+        output["fdaccess"] = fdaccess
+        output["sendsms"] = sendsms
+        output["phonecalls"] = phonecalls
+        output["cryptousage"] = cryptousage
+
+        output["recvsaction"] = recvsactions
+        output["enfperm"] = permissions
+
+        output["hashes"] = hashes
+        output["apkName"] = apkFile
+
+        pp = pprint.PrettyPrinter(indent=4)
+
+        pp.pprint(output)
+
         print(OKBLUE)
         print("############################################################")
         print(ENDC)
@@ -1236,6 +1450,7 @@ def main():
             opcodesFunc(apkFile)
         if getjar:
             getjarFunc(apkFile)
+
 
 if __name__ == "__main__":
     print(random.choice(bannerP))
