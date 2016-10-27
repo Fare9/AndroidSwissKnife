@@ -1,10 +1,11 @@
 # AndroidSwissKnife
-Program to make static analysis for Android APKs in python
+FrameWork to make static and dynamic analysis for Android APKs in Python
 If you want to ask me for changes you want to add (for example in AndroidManifest analysis), 
 write to my email address: farenain9@gmail.com
+
 ```python
     help = '''
-        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all]
+        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all] [--create-apk -f <folder from apktool> -apk <name for apk>] [--connect <IP:port>] [--DroidBox]
         --install: To install some necessary tools
         -a:     apk file in your directory or absolute path
         -o:     Name for output directories
@@ -14,8 +15,12 @@ write to my email address: farenain9@gmail.com
         --exiftool: use exiftool with some file formats (you need first --apktool)
         --jadx: use jadx to try to get source code
         --opcodes: Get information from opcodes
+        --get-jar: Get jar from apk and finally the .class in a folder
+        --connect: Connect to android device with adb
         --all: use all Analysis
+        --create-apk: generate an apk, from apktool folder
         --man: get all the help from the program as star wars film
+        --DroidBox: New feature to do a dynamic analysis of the apk (It's a "wrapper" of droidbox with Burpsuite)
 
         Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
     '''
@@ -62,13 +67,34 @@ Get headers of classes and methods in summary-name.txt
 Get aditional information about headers like classes' id and superclasses... in sumaryDetails-name.txt
 Get the receivers from code that are in AndroidManifest and not. (ORIGINAL IDEA: https://github.com/AndroidWordMalware/malware-samples/blob/master/tools/receiversFinder.py)
 
+Fifth use: --get-jar
+
+Get jar from apk with dex2jar, then get a folder with the jar file
+unzipped, you can create java file to call or test classes from this 
+jar file.
+
+
 Final Use: --all
 
 Everything put together, live of color and music.
+
+###### NEW FEATURES ########
+--create-apk
+Once you have used apktool to get smali code from an apk, you can modify it, and finally
+create another apk with your changes, you can use this feature to do it.
+
+### FINALLY DYNAMIC ANALYSIS (DroidBox Wrapper)
+--DroidBox
+I modified DroidBox code to this framework, I rewrite some functions to work in python3
+but nothing change from this program. You need to have an android emulator, in Readme.md
+you can see the features of my emulator.
 '''
+
 
 ```
 
+Features for android Emulator
+<img src="./anemf.pmg" />
 <img src="./ASKN.png" width="672"/>
 <img src="./StrawHat.png" width="516"/>
 
