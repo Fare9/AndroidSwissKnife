@@ -153,15 +153,35 @@ class Adb():
 
         return (p+'/'+name)
 
+    def startEmulatorProxy(self):
+        """
+            Start android emulator to install the apk and start analyzer with Burpsuite proxy
+        """
+
+        
+        system = self.find("images/system.img")
+        ramdisk = self.find("images/ramdisk.img")
+        sentence = 'gnome-terminal --command "emulator -avd '+self.emulator+' -http-proxy '+self.proxy.ip+':'+self.proxy.port+' -system '+system+' -ramdisk '+ramdisk+' -wipe-data -prop dalvik.vm.execution-mode=int:portable"'
+        try:
+            print("[+] Exec Emulator")
+            #print(sentence)
+            #input()
+            os.system(sentence)
+            self.correct = True
+        except Exception as e:
+            self.correct = False
+            print("[-] Error with emulator: "+str(e))
+            sys.exit(-1)
+
     def startEmulator(self):
         """
             Start android emulator to install the apk and start analyzer
         """
 
         
-        system = self.find("images/system.img")#os.path.abspath("images/system.img")
-        ramdisk = self.find("images/ramdisk.img")#os.path.abspath("images/ramdisk.img")
-        sentence = 'gnome-terminal --command "emulator -avd '+self.emulator+' -http-proxy '+self.proxy.ip+':'+self.proxy.port+' -system '+system+' -ramdisk '+ramdisk+' -wipe-data -prop dalvik.vm.execution-mode=int:portable"'
+        system = self.find("images/system.img")
+        ramdisk = self.find("images/ramdisk.img")
+        sentence = 'gnome-terminal --command "emulator -avd '+self.emulator+' -system '+system+' -ramdisk '+ramdisk+' -wipe-data -prop dalvik.vm.execution-mode=int:portable"'
         try:
             print("[+] Exec Emulator")
             #print(sentence)

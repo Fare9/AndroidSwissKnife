@@ -22,7 +22,7 @@
 
 #about me and program
 programmer = "Fare9"
-version = 0.1
+version = 2.0
 
 #banner
 HEADER  = '\033[95m'
@@ -171,6 +171,7 @@ import pprint
 import json #to load logs from logcat
 import codecs
 
+# My own classes
 import adbClass
 
 ####################################
@@ -284,6 +285,8 @@ but nothing change from this program. You need to have an android emulator, in R
 you can see the features of my emulator.
 '''
 ######################################
+
+
 def printDebug(string):
 
     global debug
@@ -291,6 +294,10 @@ def printDebug(string):
         print (string)
 
 def install():
+    '''
+        Function to help the work of installing androidSwissKnife, maybe It's not perfect
+        but you can take step by step manually
+    '''
 
     if os.geteuid() != 0:
         print("[-] You need to be root to install packages")
@@ -303,14 +310,12 @@ def install():
 
     print("[+] Creating symbolic links for androidSwissKnife")
 
-    #link actual directory to variable path
+    # link actual directory to variable path (directory where you have androidSwissKnife)
     os.system("echo PATH=\$PATH:"+actualDirectory+" >> ~/.bashrc")
 
-    
+    # add permissions to exec
     os.system("chmod +x $PWD/androidSwissKnife.py")
-    #os.system("ln -sf $PWD/androidSwissKnife.py /usr/bin/androidSwissKnife")
     os.system("chmod +x $PWD/manifestDecoder.py")
-    #os.system("ln -sf $PWD/manifestDecoder.py /usr/bin/manifestDecoder.py")
     
 
     print("[+] Now you can call the tool anywhere with: androidSwissKnife.py")
@@ -319,11 +324,11 @@ def install():
     
 
     print("[+] Installing last version of apktool")
-    os.system("wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.2.0.jar")
+    os.system("wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.2.1.jar")
 
-    os.system("chmod +x ./apktool_2.2.0.jar")
+    os.system("chmod +x ./apktool_2.2.1.jar")
 
-    os.system("ln -sf $PWD/apktool_2.2.0.jar /usr/bin/apktool")
+    os.system("ln -sf $PWD/apktool_2.2.1.jar /usr/bin/apktool")
 
 
     print("[+] Installing last version of jadx")
@@ -382,6 +387,7 @@ def createApktoolFunc(file):
         Module to get directory with apk resolution
         from apktool, well we need apktool
     '''  
+
     global outputName
     global exiftoolUse
 
@@ -513,12 +519,12 @@ def readLibraries(directory):
 
     for root,dirs,files in os.walk('.'):
         for file in files:
-            if file.endswith('.so'):
+            if file.endswith('.so'): # If it is .so file (native library)
                 pathFile = os.path.join(root,file)
                 print(WARNING)
                 print("[+] File: "+pathFile)
                 print(ENDC)
-                statement = 'objdump -T '+pathFile+' | grep Java_'
+                statement = 'objdump -T '+pathFile+' | grep Java_' # we use objdump to show strings then find Java functions
                 os.system(statement)
 
                 print("[+] Disassembling file in: "+file+".txt")
@@ -568,6 +574,9 @@ def readDatabases(directory):
 
 ####################################UNZIP##################################
 def unzipFunc(file):
+    '''
+        Unzip apk to unzip folder, then use this folder for other functions
+    '''
     global outputName
     global regularExpresion
 
@@ -581,7 +590,7 @@ def unzipFunc(file):
         # if relative, well get absolute path
         file = os.path.abspath(file)
 
-    #create name directory as: actualDirectory/apktool-outputName
+    #create name directory as: actualDirectory/unzip-outputName
     outputFile = actualDirectory + "/" + "unzip-" + outputName
     sentence = 'unzip '+file+' -d '+outputFile
 
@@ -636,6 +645,7 @@ def readCertificate(directory):
 def listAsset(directory):
     '''
         Module to list assets directory (if exists)
+        maybe you can find interesting files
     '''
     actualDirectory = os.getcwd()
 
@@ -662,9 +672,9 @@ def showStrings(directory,regEx):
         Module to show strings from .dex file or
         files in general with some regular Expressions
     '''
-    javaclassRegEx = '"L[^;]+?;"' #Objects or classes (start by L)
-    urlRegEx = '"https?:"' #http or https
-    urlBase64RegEx = '"aHR0cDo|aHR0cHM6L"' #http or https in base64
+    javaclassRegEx = '"L[^;]+?;"' # Objects or classes (start by L in smali code)
+    urlRegEx = '"https?:"' # http or https
+    urlBase64RegEx = '"aHR0cDo|aHR0cHM6L"' # http or https in base64
 
     actualDirectory = os.getcwd()
 
@@ -694,6 +704,9 @@ def showStrings(directory,regEx):
 
 #################################FOR JADX##################################
 def jadxFunc(file):
+    '''
+        Get Java code with jadx, It is not the best way, but is the prettiest
+    '''
     global outputName
 
     print("[+] Creating directory from apk to jadx output...")
@@ -706,7 +719,7 @@ def jadxFunc(file):
         # if relative, well get absolute path
         file = os.path.abspath(file)
 
-    #create name directory as: actualDirectory/apktool-outputName
+    #create name directory as: actualDirectory/jadx-outputName
     outputFile = actualDirectory + "/" + "jadx-" + outputName
     sentence = 'jadx '+' -d '+outputFile +" "+ file
 
@@ -838,7 +851,8 @@ def opcodesFunc(file):
 ###################################For dex2jar#############################
 def getjarFunc(file):
     '''
-        Function to call dex2jar
+        Function to call dex2jar, then you can see the code
+        with others tools
     '''
 
     print ("[+] Creating Directory and jar from apk...")
@@ -872,7 +886,10 @@ def getjarFunc(file):
 
 ###################################To Create apk from apktool folder#######
 def createAPKFunc(folder,apkName):
-
+    '''
+        If you change smali code from apktool output, you can pack again
+        in apk file with this function
+    '''
     print('[+] Creating temporary file before sign apk')
     sentence = 'apktool b '+folder+' -o changed_apk.apk'
     os.system(sentence)
@@ -1129,16 +1146,31 @@ def main():
 
         # start burpsuite
         prox = adbClass.Proxy()
-        prox.startBurp()
-        print(OKGREEN)
-        adbClass.progressBar()
-        print(ENDC)
+        response = ''
+        while ((response != 'y') or (response != 'n')):
+            response = input("[+] Do you want to use Burpsuite? (Y/N): ")
+            try:
+                response = response.lower()
+            except:
+                print("[-] Please respond 'Y' or 'N'")
+                continue
+
+        if response = 'y':
+            prox.startBurp()
+            print(OKGREEN)
+            adbClass.progressBar()
+            print(ENDC)
 
         emulatorName = input("[+] Give me the emulator name: ")
 
         #create adb class
         adbHandler = adbClass.Adb(emulator=emulatorName,proxy=prox)
-        adbHandler.startEmulator()
+
+        # depends if you want burp proxy or not
+        if response = 'n':
+            adbHandler.startEmulator()
+        elif response = 'y':
+            adbHandler.startEmulatorProxy()
 
         #create DynamicAnalyzer class
         dynamicAnalizer = adbClass.DynamicAnalyzer(apk=apkFile)
