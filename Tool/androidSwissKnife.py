@@ -1147,7 +1147,7 @@ def main():
         # start burpsuite
         prox = adbClass.Proxy()
         response = ''
-        while ((response != 'y') or (response != 'n')):
+        while ((response != 'y') and (response != 'n')):
             response = input("[+] Do you want to use Burpsuite? (Y/N): ")
             try:
                 response = response.lower()
@@ -1155,7 +1155,7 @@ def main():
                 print("[-] Please respond 'Y' or 'N'")
                 continue
 
-        if response = 'y':
+        if response == 'y':
             prox.startBurp()
             print(OKGREEN)
             adbClass.progressBar()
@@ -1167,9 +1167,9 @@ def main():
         adbHandler = adbClass.Adb(emulator=emulatorName,proxy=prox)
 
         # depends if you want burp proxy or not
-        if response = 'n':
+        if response == 'n':
             adbHandler.startEmulator()
-        elif response = 'y':
+        elif response == 'y':
             adbHandler.startEmulatorProxy()
 
         #create DynamicAnalyzer class
