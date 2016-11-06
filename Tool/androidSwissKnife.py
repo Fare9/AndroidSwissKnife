@@ -1131,6 +1131,7 @@ def main():
     fdaccess = {}
     servicestart = {}
     accessedfiles = {}
+    errors = [] # If some line get an error, why don't we show it?
 
     if DynamicAnalysis:
         if apkFile == '':
@@ -1289,15 +1290,15 @@ def main():
                 # We are using custom system and custom ramdisk
                 # then we have prepare applications to have this Flag
                 try:
-
-                    boxlog = logcatOutput.decode(errors='ignore').split('DroidBox:')
+                    #print(logcatOutput)
+                    #input()
+                    boxlog = logcatOutput.decode().split('DroidBox:')
                 except Exception as e:
                     print("[-] Error Decoding: "+str(e))
                     continue
                 if len(boxlog) > 1:
                     try:
                         sentence = json.loads(boxlog[1])
-                        #print(sentence)
                         # look for Dexclassloader
                         if 'DexClassLoader' in sentence:
                             sentence['DexClassLoader']['type'] = 'dexload'
@@ -1325,7 +1326,7 @@ def main():
 
                         # file read or write   
                         if 'FileRW' in sentence:  
-                            sentence['FileRW']['path'] = codecs.decode(accessedfiles[sentence['FileRW']['id']],'hex')
+                            sentence['FileRW']['path'] = accessedfiles[sentence['FileRW']['id']]
                             if sentence['FileRW']['operation'] == 'write':
                                 # if operation is write, then type is file write
                                 sentence['FileRW']['type'] = 'file write'
@@ -1368,7 +1369,7 @@ def main():
 
                             elif sentence['DataLeak']['sink'] == 'File':    
                                 # If it is a file
-                                sentence['DataLeak']['path'] = codecs.decode(accessedfiles[sentence['DataLeak']['id']],'hex')
+                                sentence['DataLeak']['path'] = accessedfiles[sentence['DataLeak']['id']]
 
                                 #get if it's write or read
                                 if sentence['DataLeak']['operation'] == 'write':
@@ -1401,16 +1402,20 @@ def main():
                             sentence['CryptoUsage']['type'] = 'crypto'                                                                   
                             cryptousage[time.time()-timestamp] = sentence['CryptoUsage']
                             logthread.increaseLogs()
-                    except ValueError:
+                    except ValueError as e:
+                        print("[-] ValueError: "+str(e))
+                        errors.append(boxlog[1])
                         pass
             except KeyboardInterrupt as e:
-                #print("[-] Error parsing adb logcat output: "+str(e))
                 try:
                     # If CTRL-C pressed stop thread
                     count.stopCounting()
                     count.join()
                 finally:
                     break;
+            except Exception as e:
+                print("[-] Error parsing adb logcat output: "+str(e))
+                #input()
 
         # KILL ADB LOGCAAAT
         os.kill(adb.pid, signal.SIGKILL)
@@ -1439,6 +1444,9 @@ def main():
 
         output["hashes"] = hashes
         output["apkName"] = apkFile
+        # sometimes there are errors in system image, but no problem 
+        # we can show the logs with errors (usually crypto)
+        output["errors"] = errors
 
         pp = pprint.PrettyPrinter(indent=4)
 
