@@ -8,7 +8,7 @@ If you want to ask me for changes you want to add (for example in AndroidManifes
 write to my email address: farenain9@gmail.com
 </p>
 
-<p> Please install this version from sourceforge: <a href="https://github.com/Fare9/AndroidSwissKnife/releases/tag/1">AndroidSwissKnife</a> , in github you just have the code.
+<p> Please install this version from sourceforge: <a href="https://github.com/Fare9/AndroidSwissKnife/releases/download/v1.0/AndroidSwissKnife.zip">AndroidSwissKnife</a>.
 </p>
 
 
