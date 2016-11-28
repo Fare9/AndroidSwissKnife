@@ -129,7 +129,24 @@ bannerP = [
 
 ]
 
-    
+secAdmin = '''
+                     _______. _______   ______ 
+                    /       ||   ____| /      |
+                   |   (----`|  |__   |  ,----'
+                    \   \    |   __|  |  |     
+                .----)   |   |  |____ |  `----.
+                |_______/    |_______| \______|
+
+.______________________________________________________|_._._._._._._._._._.
+ \_____________________________________________________|_#_#_#_#_#_#_#_#_#_|
+                                                       l
+             ___       _______  .___  ___.  __  .__   __. 
+            /   \     |       \ |   \/   | |  | |  \ |  | 
+           /  ^  \    |  .--.  ||  \  /  | |  | |   \|  | 
+          /  /_\  \   |  |  |  ||  |\/|  | |  | |  . `  | 
+         /  _____  \  |  '--'  ||  |  |  | |  | |  |\   | 
+        /__/     \__\ |_______/ |__|  |__| |__| |__| \__| 
+'''    
 
 banner = '''
          ### ###                         ### ###
@@ -173,6 +190,8 @@ import codecs
 
 # My own classes
 import adbClass
+import utilities
+from utilities import *
 
 ####################################
 # global variables for input
@@ -424,6 +443,8 @@ def createApktoolFunc(file):
         printDebug("[Debug] Error: "+str(e))
         print("[-] Maybe you need apktool...")
 
+import permissions
+from permissions import *
 
 def readAndroidManifest(directory):
 
@@ -452,45 +473,22 @@ def readAndroidManifest(directory):
 
     # Let's go with static analysis
     print('[!] Maybe normal things...')
-    if("ACCESS_NETWORK_STATE" in xmlString):
-        print('\t[+] Mmm want to access ACCESS_NETWORK_STATE')
-    if("ACCESS_WIFI_STATE" in xmlString):
-        print('\t[+] Mmm want to access ACCESS_WIFI_STATE')
-    if("CHANGE_WIFI_STATE" in xmlString):
-        print('\t[+] Mmm want to access CHANGE_WIFI_STATE')
+    for key in normal_things:
+      if key in xmlString:
+        print(normal_things[key])
 
     print("%s"%WARNING)
     print('[!] Maybe some strange things...')
-    if("CAMERA" in xmlString):
-        print('\t[+] Mmm want to access CAMERA, look for NSA spy')
-    if("hardware.camera" in xmlString):
-        print('\t[+] Mmm just for devices with CAMERAAAA')
-    if("READ_CONTACTS" in xmlString):
-        print('\t[+] Mmm want to READ_CONTACTS, take a look')
-    if("RECORD_AUDIO" in xmlString):
-        print('\t[+] Mmm want to RECORD_AUDIO, I hope you must press a button for that')
-    if("WRITE_SETTINGS" in xmlString):
-        print('\t[+] Ohh Want to WRITE_SETTINGS,bad...bad...bad')
+    for key in strange_things:
+      if key in xmlString:
+        print(strange_things[key])
     print("%s"%ENDC)
 
     print("%s"%FAIL)
     print('[!] Ohh so strange things...')
-    if("SEND_SMS" in xmlString):
-        print('\t[+] Ohh want to SEND_SMS')
-    if("RECEIVE_SMS" in xmlString):
-        print('\t[+] Ohh want to RECEIVE_SMS look for receiver in code')
-    if("READ_SMS" in xmlString):
-        print('\t[+] Ohh want to READ_SMS look for receiver in code')
-    if("WRITE_SMS" in xmlString):
-        print('\t[+] Ohh want to WRITE_SMS')
-    if("WRITE_CONTACTS" in xmlString):
-        print('\t[+] Why want to WRITE_CONTACTS ?')
-    if("CALL_PHONE" in xmlString):
-        print('\t[+] Oh really? accept CALL_PHONE')
-    if("PROCESS_OUTGOING_CALLS" in xmlString):
-        print('\t[+] Mother of Edward Snowden, PROCESS_OUTGOING_CALLS O.O')
-    if("KILL_BACKGROUND_PROCESSES" in xmlString):
-        print('\t[+] KILL_BACKGROUND_PROCESSES, even Demi Lovato wouldn\'t accept this app ')
+    for key in problem_things:
+      if key in xmlString:
+        print(problem_things[key])
     print("%s"%ENDC)
 
     #close file
@@ -498,6 +496,7 @@ def readAndroidManifest(directory):
     #finally we return to directory 
     print('[+] Change directory to: '+actualDirectory)
     os.chdir(actualDirectory)
+
 
 def readLibraries(directory): 
     '''
@@ -525,7 +524,18 @@ def readLibraries(directory):
                 print("[+] File: "+pathFile)
                 print(ENDC)
                 statement = 'objdump -T '+pathFile+' | grep Java_' # we use objdump to show strings then find Java functions
-                os.system(statement)
+                #os.system(statement)
+                error = False
+                try:
+                  output = subprocess.check_output(statement,shell=True)
+                except subprocess.CalledProcessError as e:
+                  print("[-] Error in objdump: "+str(e))
+                  error = True
+
+                if error:
+                  print(output)
+                else:
+                  print(parseObjDump(output))
 
                 print("[+] Disassembling file in: "+file+".txt")
                 if "arm" in pathFile: #for arm libs
@@ -1493,9 +1503,16 @@ def main():
 
 
 if __name__ == "__main__":
+    os.system('clear')
     print(random.choice(bannerP))
-    time.sleep(2)
+    #time.sleep(2)
+    os.system('clear')
     print (banner)
-    time.sleep(1)
-
+    #time.sleep(2)
+    os.system('clear')
+    print(OKBLUE)
+    print (secAdmin)
+    print(ENDC)
+    #time.sleep(2)
+    os.system('clear')
     main()
