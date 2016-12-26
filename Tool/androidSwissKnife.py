@@ -190,8 +190,8 @@ import codecs
 
 # My own classes
 import adbClass
-import utilities
-from utilities import *
+from supportClasses.utilities import *
+from supportClasses.permissions import *
 
 ####################################
 # global variables for input
@@ -442,9 +442,6 @@ def createApktoolFunc(file):
         os.chdir(actualDirectory)
         printDebug("[Debug] Error: "+str(e))
         print("[-] Maybe you need apktool...")
-
-import permissions
-from permissions import *
 
 def readAndroidManifest(directory):
 
