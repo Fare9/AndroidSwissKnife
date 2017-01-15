@@ -19,6 +19,7 @@ strange_things['hardware.camera'] = '\t[+] Mmm just for devices with CAMERAAAA'
 strange_things['READ_CONTACTS'] = '\t[+] Mmm want to READ_CONTACTS, take a look'
 strange_things['RECORD_AUDIO'] = '\t[+] Mmm want to RECORD_AUDIO, I hope you must press a button for that'
 strange_things['WRITE_SETTINGS'] = '\t[+] Ohh Want to WRITE_SETTINGS,bad...bad...bad'
+strange_things['ACTION_BOOT_COMPLETED'] = '\t[+] This process wants to run at boot completed'
 
 # PROBLEM THINGS
 problem_things = {}
