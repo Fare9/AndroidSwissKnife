@@ -1236,7 +1236,7 @@ def main():
             print("[-] No Packages...")
             sys.exit(-1)
 
-        ret = subprocess.call(['monkeyrunner', 'monkeyFaren.py', apkFile, packages, mainActivity], stderr=subprocess.PIPE, cwd=os.path.dirname(os.path.realpath(__file__)))
+        ret = subprocess.call(['monkeyrunner', 'monkeyFaren.py', apkFile, packages, mainActivity],stderr=subprocess.PIPE, cwd=os.path.dirname(os.path.realpath(__file__)))
 
         if ret == 1:
             print("[-] Failed to start monkeyrunner")
