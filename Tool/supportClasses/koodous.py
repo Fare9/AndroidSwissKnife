@@ -56,12 +56,17 @@ class KoodousAnalyzer():
         try:
             url_koodous = "https://api.koodous.com/apks/%s/analysis" % self.hash
             r = requests.get(url=url_koodous, headers={'Authorization': 'Token %s' % token})
-            self.jsonOutput = r.json()
+            if r.status_code == 200:
+                print("[+] Everything was okay")
+                self.jsonOutput = r.json()
+            else:
+                print("[-] There was a problem: "+str(r.text))
+                self.jsonOutput = ''
         except Exception as e:
             print("[-] Error while getting koodous response: "+str(e))
 
 
 if __name__ == "__main__":
-    koodous = KoodousAnalyzer('/root/Documentos/Ciberseg/Analisis_Estatico/13c4823b9de4e0b5f364b70ee1302055b6dc3dd793ed852d0bf0eb1f8d27c0c9.apk')
+    koodous = KoodousAnalyzer('/root/Documentos/Ciberseg/Analisis_Estatico/koodous.apk')
     koodous.analyzeApk()
-    pprint.pprint(koodous.jsonOutput)
+    pprint.pprint(koodous.jsonOutput,indent=4)
