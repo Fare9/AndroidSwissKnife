@@ -1536,8 +1536,8 @@ def main():
             except KeyboardInterrupt as e:
                 try:
                     # If CTRL-C pressed stop thread
-                    count.stopCounting()
-                    count.join()
+                    logthread.stopThread()
+                    logthread.join()
                 finally:
                     break;
             except Exception as e:
