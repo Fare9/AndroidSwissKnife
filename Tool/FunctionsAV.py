@@ -33,7 +33,9 @@ tokens = (
             "START_ACTIVITY",
             # FOR SMS API MANAGER
             "SMSMANAGER_GETDEFAULT",
-            "SMSMANAGER_SENDTEXTMESSAGE"
+            "SMSMANAGER_SENDTEXTMESSAGE",
+            # FOR HARDCODED EMAILS
+            "EMAILS"
 
         )
 
@@ -103,6 +105,13 @@ def t_SMSMANAGER_SENDTEXTMESSAGE(t):
     r"invoke-virtual/range[ ]*{(p[0-9])?(v[0-9])?[ ]*\.\.[ ]*(p[0-9])?(v[0-9])?},[ ]*Landroid/telephony/SmsManager;->sendTextMessage\(.*\)[ZCBSIJFDVL].*"
 
     print(FAIL+"\t\t[+] Send Text Message API: "+t.value+" in line: "+str(t.lineno)+ENDC)
+
+# Catch Emails
+# example@example.com
+def t_EMAILS(t):
+    r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
+
+    print(FAIL+"\t\t[+] Email in code: "+t.value+" in line: "+str(t.lineno)+ENDC)
 # method to catch errors
 def t_error(t):
 

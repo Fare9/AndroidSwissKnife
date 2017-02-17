@@ -87,7 +87,7 @@ bannerP = [
 ░ ░░ ░    ░   ░ ░  ▒ ░ ░ ░       ░                            
 ░  ░            ░  ░             ░  ░                         
                                                
-        ''',
+    ''',
     '''
 
 @@@@@@   @@@  @@@  @@@@@@@   @@@@@@@    @@@@@@   @@@  @@@@@@@
@@ -194,6 +194,11 @@ banner = '''
                         PROGRAMMER: %s
 ''' % (WARNING, ENDC, WARNING, ENDC, WARNING, ENDC, WARNING, ENDC, FAIL, ENDC, WARNING, ENDC, str(version), programmer)
 
+
+
+
+############################ END OF BANNER
+
 import os  # to use operating system commands
 import sys
 import time
@@ -203,7 +208,6 @@ import sqlite3
 import pprint
 import json  # to load logs from logcat
 import codecs
-
 # My own classes
 import adbClass
 from supportClasses.koodous import *
@@ -216,49 +220,35 @@ from supportClasses.filters import *
 
 ## will give name for output directory or files
 outputName = ''
-
 ## will get file name and file from here
 apkFile = ''
-
 ## use apktool in Analysis
 apktoolUse = False
-
 ## use unzip in Analysis
 unzipUse = False
-
 ## use exiftool in Analysis
 exiftoolUse = False
-
 ## use jadx in Analysis
 jadxUse = False
-
 ## use dexdump in Analysis
 opcodesUse = False
-
 ## regular expression for strings function
 regularExpresion = ''
-
 ## Get jar
 getjar = False
-
 ## Variables and flags for apk create with apktool
 createAPK = False
 folderWithCode = ''
 apkOutputName = ''
-
 ## Variables and flags for adb
 adbConnect = False
 portConnect = ''
-
 ## use for all analysis
 allReal = False
-
 ## Dynamic analysis just will be dynamic analysis...
 DynamicAnalysis = False
-
 ## Koodous antivirus analysis
 koodousAnalysis = False
-
 # variable for debugging
 debug = True
 
@@ -333,7 +323,7 @@ If exists the apk, you will get quick analysis
 '''
 
 
-######################################
+###################################### Some usefull functions
 
 
 def printDebug(string):
@@ -744,10 +734,11 @@ def showStrings(directory, regEx):
         Module to show strings from .dex file or
         files in general with some regular Expressions
     '''
+
     javaclassRegEx = '"L[^;]+?;"'  # Objects or classes (start by L in smali code)
     urlRegEx = '"https?:"'  # http or https
     urlBase64RegEx = '"aHR0cDo|aHR0cHM6L"'  # http or https in base64
-
+    emails = '"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]"' # look for emails in code
     actualDirectory = os.getcwd()
 
     print('[+] Change diretory to: ' + directory)
@@ -755,18 +746,20 @@ def showStrings(directory, regEx):
 
     for root, dirs, files in os.walk('.'):
         for file in files:
-            if file.endswith('.dex'):
+            if file.endswith('.dex'): # for compiled files
                 print('[+] Showing strings for: ' + os.path.join(root, file))
                 os.system("strings " + os.path.join(root, file) + " | egrep " + javaclassRegEx)
                 os.system("strings " + os.path.join(root, file) + " | egrep " + urlRegEx)
                 os.system("strings " + os.path.join(root, file) + " | egrep " + urlBase64RegEx)
+                os.system("strings " + os.path.join(root, file) + " | egrep " + emails)
                 if regEx != '':
                     os.system("strings " + os.path.join(root, file) + " | egrep " + regEx)
-            else:
+            else: # another files
                 print('[+] Showing strings for: ' + os.path.join(root, file))
                 os.system("cat " + os.path.join(root, file) + " | egrep " + javaclassRegEx)
                 os.system("cat " + os.path.join(root, file) + " | egrep " + urlRegEx)
                 os.system("cat " + os.path.join(root, file) + " | egrep " + urlBase64RegEx)
+                os.system("cat " + os.path.join(root, file) + " | egrep " + emails)
                 if regEx != '':
                     os.system("cat " + os.path.join(root, file) + " | egrep " + regEx)
 
