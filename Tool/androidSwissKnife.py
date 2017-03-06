@@ -208,6 +208,8 @@ import sqlite3
 import pprint
 import json  # to load logs from logcat
 import codecs
+import argparse # set new parsing forms
+import magic # get mimetype
 # My own classes
 import adbClass
 from supportClasses.koodous import *
@@ -217,6 +219,11 @@ from supportClasses.filters import *
 
 ####################################
 # global variables for input
+
+## Information from apk, will be a dictionary, we can get it 
+## when finish analysis as output
+apkInformation = {}
+
 
 ## will give name for output directory or files
 outputName = ''
@@ -323,6 +330,8 @@ If exists the apk, you will get quick analysis
 '''
 
 
+
+
 ###################################### Some usefull functions
 
 
@@ -387,7 +396,7 @@ def install():
 
     print('[+] Installing libraries')
     os.system("pip3 install bytecode")
-
+    os.system("pip3 install python-magic")
     os.system("sudo apt-get install lib32z1 lib32stdc++6")
 
     print("[!] Please Install at your own Android SDK and NDK from Android webpage")
@@ -415,6 +424,36 @@ def install():
     print("[+] Installing BeautifulSoup")
     os.system("pip3 install bs4")
     print("[+] Returning to: " + actualDirectory)
+
+
+##################################### START ALWAYS ANALYSIS #########################
+def checkFile(file):
+    '''
+        module to get information from the apk: filetype and 
+        hashes
+    '''
+    global apkInformation
+
+    # first put filename in apkInformation
+    apkInformation['file_name'] = file
+    print("[+] File: "+str(file))
+    # get mymetype and add it to apkInformation
+    print("[+] Getting mime type...")
+    mimetype = magic.from_file(file, mime=True)
+    apkInformation['mime_type'] = str(mimetype)
+    print("[+] Mime type: "+str(mimetype))
+
+    # get hashes
+    print("[+] Getting hashes...")
+    hashing = adbClass.DynamicAnalyzer(apk=file)
+    md5,sha1,sha256 = hashing.getHash()
+    print("\t[!] MD5: "+str(md5))
+    print("\t[!] SHA1: "+str(sha1))
+    print("\t[!] SHA256: "+str(sha256))
+    apkInformation['md5'] = str(md5)
+    apkInformation['sha1'] = str(sha1)
+    apkInformation['sha256'] = str(sha256)
+
 
 
 ##################################### FOR APKTOOL ###################################
@@ -1125,77 +1164,77 @@ def main():
     global DynamicAnalysis
     global koodousAnalysis
 
-    help = '''
-        ./androidSwissKnife.py [--install] [--man] -a <apk_file> -o <output_directories_name> [--apktool] [--unzip] [--regEx <"regular Expression">] [--exiftool] [--jadx] [--opcodes] [--all] [--create-apk -f <folder from apktool> -apk <name for apk>] [--connect <IP:port>] [--DroidBox]
-        --install: To install some necessary tools
-        -a:     apk file in your directory or absolute path
-        -o:     Name for output directories
-        --apktool:  use apktool in Analysis
-        --unzip: use unzip in Analysis
-        --regEx: with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)
-        --exiftool: use exiftool with some file formats (you need first --apktool)
-        --jadx: use jadx to try to get source code
-        --opcodes: Get information from opcodes
-        --get-jar: Get jar from apk and finally the .class in a folder
-        --connect: Connect to android device with adb
-        --all: use all Analysis
-        --create-apk: generate an apk, from apktool folder
-        --man: get all the help from the program as star wars film
-        --DroidBox: New feature to do a dynamic analysis of the apk (It's a "wrapper" of droidbox with Burpsuite)
-        --Koodous: Try to search your apk in Koodous
+    parser = argparse.ArgumentParser(description="AndroidSwissKnife application to help in apk analysis")
+    parser.add_argument("--install",action="store_true",help="To install some necessary tools")
+    parser.add_argument("-a","--apk",type=str,help="apk file in your directory or absolute path")
+    parser.add_argument("-o","--output",type=str,help="Name for output directories")
+    parser.add_argument("--apktool",action="store_true",help="use apktool in Analysis")
+    parser.add_argument("--unzip",action="store_true",help="use unzip in Analysis")
+    parser.add_argument("--regEx",type=str,help='with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)')
+    parser.add_argument("--exiftool",action="store_true",help="use exiftool with some file formats (you need first --apktool)")
+    parser.add_argument("--jadx",action="store_true",help="use jadx to try to get source code")
+    parser.add_argument("--opcodes",action="store_true",help="Get information from opcodes")
+    parser.add_argument("--get-jar",action="store_true",help="Get jar from apk and finally the .class in a folder")
+    parser.add_argument("--connect",type=str,help="Connect to android device with adb <IP:PORT>")
+    parser.add_argument("--all",action="store_true",help="use all Analysis")
+    parser.add_argument("--create-apk",action="store_true",help="generate an apk, from apktool folder")
+    parser.add_argument("--man",action="store_true",help="Get all the help from the program as star wars film")
+    parser.add_argument("--DroidBox",action="store_true",help="New feature to do a dynamic analysis of the apk (It's a \"wrapper\" of droidbox with Burpsuite)")
+    parser.add_argument("--Koodous",action="store_true",help="Try to search your apk in Koodous")
+    parser.add_argument("-f","--folder",type=str,help='folder from apktool (needs --create-apk)')
+    parser.add_argument("--apk-output",type=str,help='Output apk (needs --create-apk)')
+    args = parser.parse_args()
 
-        Ejemplo:    ./androidSwissKnife.py -a dragonForce.apk -o analysis_dragon --apktool
-    '''
 
-    ## My own parser... I know is a bit stupid xD
-    for index in range(len(sys.argv)):
-        if sys.argv[index] == '--install':
-            install()
-            sys.exit(0)
-        if sys.argv[index] == '--man':
-            showTotalHelp()
-            sys.exit(0)
-        if sys.argv[index] == '-a':
-            apkFile = str(sys.argv[index + 1])
-        if sys.argv[index] == '-o':
-            outputName = str(sys.argv[index + 1])
-        if sys.argv[index] == '--apktool':
-            apktoolUse = True
-        if sys.argv[index] == '--unzip':
-            unzipUse = True
-        if sys.argv[index] == '--exiftool':
-            exiftoolUse = True
-        if sys.argv[index] == '--regEx':
-            regularExpresion = sys.argv[index + 1]
-        if sys.argv[index] == '--jadx':
-            jadxUse = True
-        if sys.argv[index] == '--opcodes':
-            opcodesUse = True
-        if sys.argv[index] == '--get-jar':
-            getjar = True
-        if sys.argv[index] == '--create-apk':
-            createAPK = True
-        if sys.argv[index] == '-f':
-            folderWithCode = str(sys.argv[index + 1])
-        if sys.argv[index] == '-apk':
-            apkOutputName = str(sys.argv[index + 1])
-        if sys.argv[index] == '--connect':
-            adbConnect = True
-            portConnect = str(sys.argv[index + 1])
-        if sys.argv[index] == '--all':
-            allReal = True
-            exiftoolUse = True
-        if sys.argv[index] == '--DroidBox':
-            DynamicAnalysis = True
-        if sys.argv[index] == '--Koodous':
-            koodousAnalysis = True
+    if args.install: # install androidswissknife
+        install()
+        sys.exit(0)
+    if args.man: # show all the help
+        showTotalHelp()
+        sys.exit(0)
+    if args.apk is not None: # get apkfile
+        apkFile = str(args.apk)
+    if args.output is not None:
+        outputName = str(args.output)
 
+    apktoolUse = args.apktool
+    unzipUse = args.unzip
+    exiftoolUse = args.exiftool
+
+    if args.regEx is not None:
+        regularExpresion = args.regEx
+
+    jadxUse = args.jadx
+    opcodesUse = args.opcodes
+    getjar = args.get_jar
+    createAPK = args.create_apk
+
+    if args.folder is not None:
+        folderWithCode = str(args.folder)
+    if args.apk_output is not None:
+        apkOutputName = str(args.apk_output)
+
+    if args.connect is not None:
+        adbConnect = True 
+        portConnect = str(args.connect)
+
+    if args.all: # we do this in this way to set two options
+        allReal = True
+        exiftoolUse = True
+
+    DynamicAnalysis = args.DroidBox
+    koodousAnalysis = args.Koodous
+    
     if (not koodousAnalysis) and (not adbConnect) and (not createAPK) and (not apktoolUse) and (not unzipUse) and (
             not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar) and (not allReal) and (
             not DynamicAnalysis):
-        print(help)
+        print("[-] Use --help or -h to check help")
         sys.exit(0)
 
+
+    if apkFile != '':
+        checkFile(apkFile) # always do this check if exists apk
+        input()
     ##################################### Do a quick analysis with koodous, you need to write your token
     if koodousAnalysis:
         if apkFile == '':
