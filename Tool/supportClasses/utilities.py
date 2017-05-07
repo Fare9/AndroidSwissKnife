@@ -3,7 +3,7 @@
     and where i call it
 '''
 
-def parseObjDump(text):
+def parseObjDump(text,file_):
     '''
         I will parse output of objdump, something like this:
         0000dd75 g    DF .text  00000026 Java_com_Titanium_Magister_sursumApp_nativesursumAppCall
@@ -60,16 +60,16 @@ def parseObjDump(text):
         elif dictionary['symbols'] == 'O':
             dictionary['kind_symbol'] = 'Symbol is a Object name'
 
-        print(dictionary['kind_symbol'])
+        #print(dictionary['kind_symbol'])
         dictionary['section'] = strippedLine[3]
-        print(dictionary['section'])
+        #print(dictionary['section'])
         dictionary['size'] = strippedLine[4]
-        print(dictionary['size'])
+        #print(dictionary['size'])
         dictionary['method'] = strippedLine[5]
-        print(dictionary['method'])
+        #print(dictionary['method'])
 
         output.append(dictionary)
 
-    return output
+    return {"File":file_,"Methods":output}
 
 
