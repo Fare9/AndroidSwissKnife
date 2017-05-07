@@ -369,11 +369,11 @@ def install():
     os.chdir("Tools")
 
     print("[+] Installing last version of apktool")
-    os.system("wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.2.1.jar")
+    os.system("wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.2.2.jar")
 
-    os.system("chmod +x ./apktool_2.2.1.jar")
+    os.system("chmod +x ./apktool_2.2.2.jar")
 
-    os.system("ln -sf $PWD/apktool_2.2.1.jar /usr/bin/apktool")
+    os.system("ln -sf $PWD/apktool_2.2.2.jar /usr/bin/apktool")
 
     print("[+] Installing last version of jadx")
 
@@ -509,7 +509,8 @@ def readAndroidManifest(directory):
 
         Please add what you want if you thing something is strange
     '''
-
+    global apkInformation
+    apkInformation['permissions'] = {}
     global WARNING
     global FAIL
     global ENDC
@@ -528,21 +529,27 @@ def readAndroidManifest(directory):
 
     # Let's go with static analysis
     print('[!] Maybe normal things...')
+    apkInformation['permissions']['Normal_Things'] = []
     for key in normal_things:
         if key in xmlString:
+            apkInformation['permissions']['Normal_Things'].append(key)
             print(normal_things[key])
 
     print("%s" % WARNING)
     print('[!] Maybe some strange things...')
+    apkInformation['permissions']['Strange_Things'] = []
     for key in strange_things:
         if key in xmlString:
+            apkInformation['permissions']['Strange_Things'].append(key)
             print(strange_things[key])
     print("%s" % ENDC)
 
     print("%s" % FAIL)
     print('[!] Ohh so strange things...')
+    apkInformation['permissions']['Problem_Things'] = []
     for key in problem_things:
         if key in xmlString:
+            apkInformation['permissions']['Problem_Things'].append(key)
             print(problem_things[key])
     print("%s" % ENDC)
 
@@ -559,6 +566,9 @@ def readInterestingFilters(directory):
     :param directory:
     :return:
     '''
+    global apkInformation
+    apkInformation['Filters'] = []
+
     global WARNING
     global FAIL
     global ENDC
@@ -575,6 +585,7 @@ def readInterestingFilters(directory):
     print('[+] Stranger filters: ')
     for key in filterString:
         if key in xmlString:
+            apkInformation['Filters'].append(key)
             print(filterString[key])
 
     # close file
@@ -591,6 +602,9 @@ def readLibraries(directory):
 
         This extract Native code(arm,intel or mips).
     '''
+    global apkInformation
+    apkInformation['Native_Methods'] = []
+
     global WARNING
     global ENDC
 
@@ -604,36 +618,41 @@ def readLibraries(directory):
 
     for root, dirs, files in os.walk('.'):
         for file in files:
-            if file.endswith('.so'):  # If it is .so file (native library)
-                pathFile = os.path.join(root, file)
-                print(WARNING)
-                print("[+] File: " + pathFile)
-                print(ENDC)
-                statement = 'objdump -T ' + pathFile + ' | grep Java_'  # we use objdump to show strings then find Java functions
-                # os.system(statement)
-                error = False
-                try:
-                    output = subprocess.check_output(statement, shell=True)
-                except subprocess.CalledProcessError as e:
-                    print("[-] Error in objdump: " + str(e))
-                    error = True
+            try:
+                if file.endswith('.so'):  # If it is .so file (native library)
+                    pathFile = os.path.join(root, file)
+                    print(WARNING)
+                    print("[+] File: " + pathFile)
+                    print(ENDC)
+                    statement = 'objdump -T ' + pathFile + ' | grep Java_'  # we use objdump to show strings then find Java functions
+                    # os.system(statement)
+                    error = False
+                    try:
+                        output = subprocess.check_output(statement, shell=True)
+                    except subprocess.CalledProcessError as e:
+                        print("[-] Error in objdump: " + str(e))
+                        error = True
 
-                if error:
-                    print(output)
-                else:
-                    print(parseObjDump(output))
+                    if error:
+                        print(output)
+                    else:
+                        native_methods = parseObjDump(output,pathFile)
+                        pprint.pprint(native_methods)
+                        apkInformation['Native_Methods'].append(native_methods)
 
-                print("[+] Disassembling file in: " + file + ".txt")
-                if "arm" in pathFile:  # for arm libs
-                    statement = 'arm-linux-androideabi-objdump -d ' + pathFile + ' > ' + file + '.txt'
-                    os.system(statement)
-                elif "86" in pathFile:  # for x86 32 bits libs
-                    statement = 'i686-linux-android-objdump -d ' + pathFile + ' > ' + file + '.txt'
-                    os.system(statement)
-                elif "mips" in pathFile:  # just for Rico's mind
-                    statement = 'mipsel-linux-android-objdump -d ' + pathFile + ' > ' + file + '.txt'
-                    os.system(statement)
-                    # end if
+                    print("[+] Disassembling file in: " + file + ".txt")
+                    if "arm" in pathFile:  # for arm libs
+                        statement = 'arm-linux-androideabi-objdump -d ' + pathFile + ' > ' + file + '.txt'
+                        os.system(statement)
+                    elif "86" in pathFile:  # for x86 32 bits libs
+                        statement = 'i686-linux-android-objdump -d ' + pathFile + ' > ' + file + '.txt'
+                        os.system(statement)
+                    elif "mips" in pathFile:  # just for Rico's mind
+                        statement = 'mipsel-linux-android-objdump -d ' + pathFile + ' > ' + file + '.txt'
+                        os.system(statement)
+                        # end if
+            except: #maybe not Java functions
+                continue
     print('[+] Returning to directory: ' + actualDirectory)
     os.chdir(actualDirectory)
 
