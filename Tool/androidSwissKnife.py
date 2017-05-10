@@ -198,18 +198,20 @@ banner = '''
 
 
 ############################ END OF BANNER
-
-import os  # to use operating system commands
-import sys
-import time
-import random
-import signal
-import sqlite3
-import pprint
-import json  # to load logs from logcat
-import codecs
-import argparse # set new parsing forms
-import magic # get mimetype
+try:
+  import os  # to use operating system commands
+  import sys
+  import time
+  import random
+  import signal
+  import sqlite3
+  import pprint
+  import json  # to load logs from logcat
+  import codecs
+  import argparse # set new parsing forms
+  import magic # get mimetype
+except Exception as e:
+  print ("[-] You have problems with one library: "+str(e))
 # My own classes
 import adbClass
 from supportClasses.koodous import *
@@ -256,6 +258,7 @@ allReal = False
 DynamicAnalysis = False
 ## Koodous antivirus analysis
 koodousAnalysis = False
+uploadKoodous = False
 # variable for debugging
 debug = True
 
@@ -1182,6 +1185,7 @@ def main():
     global portConnect
     global DynamicAnalysis
     global koodousAnalysis
+    global uploadKoodous
 
     parser = argparse.ArgumentParser(description="AndroidSwissKnife application to help in apk analysis")
     parser.add_argument("--install",action="store_true",help="To install some necessary tools")
@@ -1199,7 +1203,8 @@ def main():
     parser.add_argument("--create-apk",action="store_true",help="generate an apk, from apktool folder")
     parser.add_argument("--man",action="store_true",help="Get all the help from the program as star wars film")
     parser.add_argument("--DroidBox",action="store_true",help="New feature to do a dynamic analysis of the apk (It's a \"wrapper\" of droidbox with Burpsuite)")
-    parser.add_argument("--Koodous",action="store_true",help="Try to search your apk in Koodous")
+    parser.add_argument("--Koodous",action="store_true",help="Try to search your apk in Koodous, it will take some time")
+    parser.add_argument("--upload",action="store_true",help="If APK is not in koodous upload to analysis")
     parser.add_argument("-f","--folder",type=str,help='folder from apktool (needs --create-apk)')
     parser.add_argument("--apk-output",type=str,help='Output apk (needs --create-apk)')
     args = parser.parse_args()
@@ -1267,7 +1272,7 @@ def main():
             # if relative, well get absolute path
             apkFile = os.path.abspath(apkFile)
 
-        koodous = KoodousAnalyzer(apk=apkFile)
+        koodous = KoodousAnalyzer(apk=apkFile,upload=args.upload)
         koodous.analyzeApk()
         pprint.pprint(koodous.jsonOutput, indent=4)
         sys.exit(0)
@@ -1680,8 +1685,8 @@ if __name__ == "__main__":
     os.system('clear')
     print(OKBLUE)
     #print (secAdmin)
-    print (ciberSeg)
+    #print (ciberSeg)
     print(ENDC)
-    time.sleep(2)
+    #time.sleep(2)
     os.system('clear')
     main()
