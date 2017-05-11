@@ -13,7 +13,8 @@ write to my email address: farenain9@gmail.com
 
 
 <p> <h3> New argument parser !!! </h3> </p>
-```python
+
+```Python
 
     parser = argparse.ArgumentParser(description="AndroidSwissKnife application to help in apk analysis")
     parser.add_argument("--install",action="store_true",help="To install some necessary tools")
@@ -39,7 +40,7 @@ write to my email address: farenain9@gmail.com
     
 ```
 
-```python
+```Python
 totalHelp = '''
 All help is here...
 
