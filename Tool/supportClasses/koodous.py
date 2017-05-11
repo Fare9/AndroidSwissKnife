@@ -14,7 +14,7 @@ import time
 import pprint
 
 ####### RES API TOKEN FROM KOODOUS USER
-token = 'a45bbf2f998215f08475cde600dae6eb3fd91630'
+token = ''
 
 
 class KoodousAnalyzer():
