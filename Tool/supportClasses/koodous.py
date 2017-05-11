@@ -137,7 +137,9 @@ class KoodousAnalyzer():
                         r = requests.get(url=url_koodous, headers={'Authorization': 'Token %s' % token})
 
                         i = 0
-                        constant_string = 'Waiting for the report'
+                        constant_string = 'Waiting for the report...'
+
+                        counter = 0
                         while r.status_code == 405:
                             # show dots in string
                             show_string = constant_string[0:i]
@@ -148,9 +150,13 @@ class KoodousAnalyzer():
                                 i = 0
 
                             time.sleep(0.2)
+                            counter += 1
                             sys.stdout.write("\033[K\r")
                             sys.stdout.flush()
-                            r = requests.get(url=url_koodous, headers={'Authorization': 'Token %s' % token})
+
+                            if counter == 1500: # I know maybe is too much, but you can't overwhelm the api
+                                r = requests.get(url=url_koodous, headers={'Authorization': 'Token %s' % token})
+                                counter = 0
 
                         return r.json()
                     else:
