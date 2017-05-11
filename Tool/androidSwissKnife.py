@@ -212,7 +212,7 @@ try:
   import magic # get mimetype
 
   # My own classes
-  import adbClass
+  import supportClasses.adbClass as adbClass
   from supportClasses.koodous import *
   from supportClasses.utilities import *
   from supportClasses.permissions import *
@@ -389,6 +389,9 @@ def install():
     os.system("ln -s $PWD/build/jadx/bin/jadx-gui /usr/bin/jadx-gui")
 
     os.chdir("..")  # Go to Tools
+    print("[+] Installing gnome-terminal")
+    os.system("sudo apt-get install gnome-terminal")
+    
     print("[+] Installing exiftool")
     os.system("sudo apt-get install exiftool")
 
@@ -944,7 +947,7 @@ def opcodesFunc(file):
 
     print("[+] Using manifestDecoder")
     # Fixed problems to use with python3
-    command = "manifestDecoder.py " + file
+    command = "utilities/manifestDecoder.py " + file
     os.system(command)
 
     command = "cat " + outputManifestFile + " | grep manifest | sed -nE 's/.*package=\"([^\"]+)\".*/\\1/p'"
@@ -1227,6 +1230,7 @@ def main():
 
     if args.folder is not None:
         folderWithCode = str(args.folder)
+
     if args.apk_output is not None:
         apkOutputName = str(args.apk_output)
 
@@ -1390,7 +1394,7 @@ def main():
             print("[-] No Packages...")
             sys.exit(-1)
 
-        ret = subprocess.call(['monkeyrunner', 'monkeyFaren.py', apkFile, packages, mainActivity],
+        ret = subprocess.call(['monkeyrunner', 'utilities/monkeyFaren.py', apkFile, packages, mainActivity],
                               stderr=subprocess.PIPE, cwd=os.path.dirname(os.path.realpath(__file__)))
 
         if ret == 1:
@@ -1620,6 +1624,9 @@ def main():
         print(ENDC)
 
         sys.exit(0)
+
+    ##################################### Dynamic Analysis with VirtualBox machine
+
     ##################################### Do everything O.O
     if allReal:
         if apkFile == '':
@@ -1664,9 +1671,6 @@ if __name__ == "__main__":
     time.sleep(1)
     os.system('clear')
     print(OKBLUE)
-    #print (secAdmin)
-    #print (ciberSeg)
     print(ENDC)
-    #time.sleep(2)
     os.system('clear')
     main()
