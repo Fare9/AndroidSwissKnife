@@ -1167,7 +1167,7 @@ def showTotalHelp():
     for c in totalHelp:
         sys.stdout.write('%s' % c)
         sys.stdout.flush()
-        time.sleep(0.25)
+        time.sleep(0.05)
 
 
 def main():
@@ -1681,10 +1681,10 @@ def main():
 if __name__ == "__main__":
     os.system('clear')
     print(random.choice(bannerP))
-    time.sleep(2)
+    time.sleep(1)
     os.system('clear')
     print (banner)
-    time.sleep(2)
+    time.sleep(1)
     os.system('clear')
     print(OKBLUE)
     #print (secAdmin)
