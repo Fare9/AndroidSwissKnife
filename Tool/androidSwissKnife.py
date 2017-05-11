@@ -330,6 +330,9 @@ you can see the features of my emulator.
 Try to quick analyze your apk with koodous the antivirus from community.
 https://koodous.com
 If exists the apk, you will get quick analysis
+
+--upload
+If you want to upload your APK to Koodous to analyze.
 '''
 
 
