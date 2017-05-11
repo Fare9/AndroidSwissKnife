@@ -210,15 +210,15 @@ try:
   import codecs
   import argparse # set new parsing forms
   import magic # get mimetype
+
+  # My own classes
+  import adbClass
+  from supportClasses.koodous import *
+  from supportClasses.utilities import *
+  from supportClasses.permissions import *
+  from supportClasses.filters import *
 except Exception as e:
   print ("[-] You have problems with one library: "+str(e))
-# My own classes
-import adbClass
-from supportClasses.koodous import *
-from supportClasses.utilities import *
-from supportClasses.permissions import *
-from supportClasses.filters import *
-
 ####################################
 # global variables for input
 
@@ -249,9 +249,6 @@ getjar = False
 createAPK = False
 folderWithCode = ''
 apkOutputName = ''
-## Variables and flags for adb
-adbConnect = False
-portConnect = ''
 ## use for all analysis
 allReal = False
 ## Dynamic analysis just will be dynamic analysis...
@@ -270,7 +267,8 @@ First use: --apktool
 We will use apktool to extract data compressed in your apk, please install
 the last version of apktool.
 When finished the process of descompressing with apktool, we will read the
-AndroidManifest.xml and show some strange data (or not).
+AndroidManifest.xml and show some strange data (or not) now implemented
+permissions and filters.
 After that we will read libraries in apk to find some function that
 are stored in .so files and start by Java_ . Then that functions could be
 called from app code. New feature that use objdump to get assembly code.
@@ -1143,12 +1141,6 @@ def extractMetaData(directory):
         os.chdir(actualDirectory)
 
 
-#######################################FOR ADB#############################
-def adbConnectFunc(port):
-    print('[+] Connecting to android device by: ' + port)
-    os.system("adb connect " + port)
-
-
 ###########################################################################
 
 
@@ -1184,8 +1176,6 @@ def main():
     global createAPK
     global folderWithCode
     global apkOutputName
-    global adbConnect
-    global portConnect
     global DynamicAnalysis
     global koodousAnalysis
     global uploadKoodous
@@ -1201,7 +1191,6 @@ def main():
     parser.add_argument("--jadx",action="store_true",help="use jadx to try to get source code")
     parser.add_argument("--opcodes",action="store_true",help="Get information from opcodes")
     parser.add_argument("--get-jar",action="store_true",help="Get jar from apk and finally the .class in a folder")
-    parser.add_argument("--connect",type=str,help="Connect to android device with adb <IP:PORT>")
     parser.add_argument("--all",action="store_true",help="use all Analysis")
     parser.add_argument("--create-apk",action="store_true",help="generate an apk, from apktool folder")
     parser.add_argument("--man",action="store_true",help="Get all the help from the program as star wars film")
@@ -1241,10 +1230,6 @@ def main():
     if args.apk_output is not None:
         apkOutputName = str(args.apk_output)
 
-    if args.connect is not None:
-        adbConnect = True 
-        portConnect = str(args.connect)
-
     if args.all: # we do this in this way to set two options
         allReal = True
         exiftoolUse = True
@@ -1252,7 +1237,7 @@ def main():
     DynamicAnalysis = args.DroidBox
     koodousAnalysis = args.Koodous
     
-    if (not koodousAnalysis) and (not adbConnect) and (not createAPK) and (not apktoolUse) and (not unzipUse) and (
+    if (not koodousAnalysis) and (not createAPK) and (not apktoolUse) and (not unzipUse) and (
             not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar) and (not allReal) and (
             not DynamicAnalysis):
         print("[-] Use --help or -h to check help")
@@ -1285,14 +1270,6 @@ def main():
             print(help)
             sys.exit(0)
         createAPKFunc(folderWithCode, apkOutputName)
-        sys.exit(0)
-
-    ##################################### Connect to device with adb 
-    if adbConnect:
-        if (portConnect == ''):
-            print(help)
-            sys.exit(0)
-        adbConnectFunc(portConnect)
         sys.exit(0)
 
     ##################################### Dynamic Anaylisis function with all necessary classes
