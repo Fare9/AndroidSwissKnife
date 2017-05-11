@@ -14,6 +14,7 @@ write to my email address: farenain9@gmail.com
 
 <p> <h3> New argument parser !!! </h3> </p>
 ```python
+
     parser = argparse.ArgumentParser(description="AndroidSwissKnife application to help in apk analysis")
     parser.add_argument("--install",action="store_true",help="To install some necessary tools")
     parser.add_argument("-a","--apk",type=str,help="apk file in your directory or absolute path")
@@ -35,6 +36,7 @@ write to my email address: farenain9@gmail.com
     parser.add_argument("-f","--folder",type=str,help='folder from apktool (needs --create-apk)')
     parser.add_argument("--apk-output",type=str,help='Output apk (needs --create-apk)')
     args = parser.parse_args()
+    
 ```
 
 ```python
