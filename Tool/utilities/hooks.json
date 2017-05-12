@@ -628,8 +628,127 @@
             "method": "openCamera",
             "thisObject": true,
             "type": "media"
+        },
+        {
+            "class_name": "java.net.HttpURLConnection",
+            "method": "disconnect",
+            "thisObject": true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.net.HttpURLConnection",
+            "method": "getHeaderField",
+            "thisObject": true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.net.HttpURLConnection",
+            "method": "setFollowRedirects",
+            "thisObject": true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.net.HttpURLConnection",
+            "method": "setRequestMethod",
+            "thisObject": true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.net.HttpURLConnection",
+            "method": "setRequestMethod",
+            "thisObject": true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.net.HttpURLConnection",
+            "method": "getOutputStream",
+            "thisObject": true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.net.HttpURLConnection",
+            "method": "getInputStream",
+            "thisObject": true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.net.HttpURLConnection",
+            "method": "HttpURLConnection",
+            "thisObject": true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.net.HttpURLConnection",
+            "method": "connect",
+            "thisObject": true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.io.OutputStream",
+            "method": "write",
+            "thisObject":true,
+            "type": "file"
+        },
+        {
+            "class_name": "java.io.InputStream",
+            "method": "read",
+            "thisObject":true,
+            "type": "file"
+        },
+        {
+            "class_name": "java.net.Authenticator",
+            "method": "requestPasswordAuthentication",
+            "thisObject":true,
+            "type":"network"
+        },
+        {
+            "class_name": "java.net.Authenticator",
+            "method": "getPasswordAuthentication",
+            "thisObject":true,
+            "type":"network"
+        },
+        {
+            "class_name": "javax.net.ssl.HttpsURLConnection",
+            "method": "HttpsURLConnection",
+            "thisObject":true,
+            "type":"network"
+        },
+        {
+            "class_name": "javax.net.ssl.HttpsURLConnection",
+            "method": "getCipherSuite",
+            "thisObject":true,
+            "type":"network"
+        },
+        {
+            "class_name": "javax.net.ssl.HttpsURLConnection",
+            "method": "setHostnameVerifier",
+            "thisObject":true,
+            "type":"network"
+        },
+        {
+            "class_name": "javax.net.ssl.HttpsURLConnection",
+            "method": "setSSLSocketFactory",
+            "thisObject":true,
+            "type":"network"
+        },
+        {
+            "class_name": "javax.net.ssl.HttpsURLConnection",
+            "method": "connect",
+            "thisObject":true,
+            "type":"network"
+        },
+        {
+            "class_name": "java.net.URLConnection",
+            "method": "URLConnection",
+            "thisObject" : true,
+            "type": "network"
+        },
+        {
+            "class_name": "java.net.URLConnection",
+            "method": "connect",
+            "thisObject" : true,
+            "type": "network"
         }
-
     ],
     "trace": false
 }
