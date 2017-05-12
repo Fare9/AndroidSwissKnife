@@ -38,6 +38,7 @@ import hashlib
 
 from threading import Thread
 from bs4 import BeautifulSoup
+from IPy import IP
 
 class threadAnalyzer(Thread):
     """
@@ -134,16 +135,62 @@ tags = { 0x1 :   "TAINT_LOCATION",      0x2: "TAINT_CONTACTS",        0x4: "TAIN
          0x100000: "TAINT_EMAIL",       0x200000: "TAINT_CALENDAR",   0x400000: "TAINT_SETTINGS" }
 
 class Adb():
-
+    '''
+        Class which act as an ADB wrapper
+    '''
     def __init__(self,emulator = None,proxy = None):
-        if emulator == None:
-            print('[-] Specify emulator name')
-            sys.exit(-1)
-        else:
-            self.emulator = emulator
+        """ Constructor of the class """
+        self.emulator = emulator
         self.proxy = proxy
 
+    def connectADB(self,ip):
+        """ Class to connect with adb device, specifically Androidx86 6.0 """
+        print("[+] Trying to connect to: "+str(ip))
+        try:
+            IP(ip)
+        except ValueError:
+            print("[-] Value: "+ip+" is not a valid IP")
+            return -1
+        kill_server = """adb kill-server"""
+        adb_connect = "adb connect " + str(ip)
+
+        subprocess.call(kill_server,shell=True)
+
+        returned_string = subprocess.check_output(adb_connect,shell=True)
+
+        if "unable to connect" in str(returned_string):
+            print("[-] It's not possible to connect that IP with adb")
+            return -1
+
+        if "already connected to" in str(returned_string):
+            counter = 0
+            while "already connected to" in str(returned_string):
+                subprocess.call(kill_server,shell=True)
+                returned_string = subprocess.check_output(adb_connect,shell=True)
+                counter += 1
+                if counter == 3:
+                    break
+
+            if counter == 3: # not possible to connect
+                print("[+] It looks that you have a problem connecting with your device")
+                respuesta = ''
+                while respuesta != 'y' or respuesta != 'n':
+                    respuesta = input("Do you want to try even with problems?[y/n]")
+                    respuesta = respuesta.lower()
+
+                if respuesta == 'y':
+                    return 0
+                else:
+                    return -1
+            else:
+                print("[+] Now you are connected to the device: "+str(ip))
+                return 0
+        if 'connected to' in str(returned_string):
+            print("[+] Now you are connected to the device: "+str(ip))
+            return 0
+
     def find(self,name):
+        """ Module to find AndroidSwissKnife in variable PATH """
         path = os.environ['PATH']
         path = path.split(":")
 
@@ -151,13 +198,18 @@ class Adb():
             if 'AndroidSwissKnife' in p:
                 ask = p
 
-        return (p+'/'+name)
+        return (ask+'/'+name)
 
     def startEmulatorProxy(self):
         """
             Start android emulator to install the apk and start analyzer with Burpsuite proxy
         """
-
+        if emulator == None:
+            print('[-] Specify emulator name')
+            sys.exit(-1)
+        if proxy == None:
+            print('[-] Specify Proxy')
+            sys.exit(-1)
         
         system = self.find("images/system.img")
         ramdisk = self.find("images/ramdisk.img")
@@ -177,7 +229,9 @@ class Adb():
         """
             Start android emulator to install the apk and start analyzer
         """
-
+        if emulator == None:
+            print('[-] Specify emulator name')
+            sys.exit(-1)
         
         system = self.find("images/system.img")
         ramdisk = self.find("images/ramdisk.img")
@@ -354,7 +408,7 @@ def progressBar():
         time.sleep(0.2)
 
 if __name__ == '__main__':
-    
+    '''
     burp = Proxy()
     
     print("Burp ip: "+burp.ip)
@@ -367,3 +421,6 @@ if __name__ == '__main__':
     time.sleep(2)
     da = DynamicAnalyzer(apk="prueba.apk")
     da.extractingApk()
+    '''
+    adb = Adb()
+    adb.connectADB('10.0.2.7')
