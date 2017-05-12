@@ -37,7 +37,6 @@ class KoodousAnalyzer():
                     401: "Invalid token",
                     429: "Api limit reached",
                     404: "Doesn't exist",
-                    401: "APK doesn't exist",
                     405: "waiting finish analysis"
         }
 
