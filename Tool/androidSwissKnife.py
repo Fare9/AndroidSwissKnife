@@ -256,6 +256,8 @@ DynamicAnalysis = False
 ## Koodous antivirus analysis
 koodousAnalysis = False
 uploadKoodous = False
+## Droidmon dinamic analysis
+Droidmon = False
 # variable for debugging
 debug = True
 
@@ -404,6 +406,7 @@ def install():
     print('[+] Installing libraries')
     os.system("pip3 install bytecode")
     os.system("pip3 install python-magic")
+    os.system("pip3 install IPy")
     os.system("sudo apt-get install lib32z1 lib32stdc++6")
 
     print("[!] Please Install at your own Android SDK and NDK from Android webpage")
@@ -1182,6 +1185,7 @@ def main():
     global DynamicAnalysis
     global koodousAnalysis
     global uploadKoodous
+    global Droidmon
 
     parser = argparse.ArgumentParser(description="AndroidSwissKnife application to help in apk analysis")
     parser.add_argument("--install",action="store_true",help="To install some necessary tools")
@@ -1195,13 +1199,15 @@ def main():
     parser.add_argument("--opcodes",action="store_true",help="Get information from opcodes")
     parser.add_argument("--get-jar",action="store_true",help="Get jar from apk and finally the .class in a folder")
     parser.add_argument("--all",action="store_true",help="use all Analysis")
-    parser.add_argument("--create-apk",action="store_true",help="generate an apk, from apktool folder")
+    parser.add_argument("--create-apk",action="store_true",help="generate an apk, from apktool folder use -f <folder> --apk-output <output.apk>")
     parser.add_argument("--man",action="store_true",help="Get all the help from the program as star wars film")
     parser.add_argument("--DroidBox",action="store_true",help="New feature to do a dynamic analysis of the apk (It's a \"wrapper\" of droidbox with Burpsuite)")
     parser.add_argument("--Koodous",action="store_true",help="Try to search your apk in Koodous, it will take some time")
     parser.add_argument("--upload",action="store_true",help="If APK is not in koodous upload to analysis")
     parser.add_argument("-f","--folder",type=str,help='folder from apktool (needs --create-apk)')
     parser.add_argument("--apk-output",type=str,help='Output apk (needs --create-apk)')
+    parser.add_argument("--Droidmon",action="store_true",help="New new feature to do dynamic analysis of the apk, It uses a virtual machine with xposed")
+    parser.add_argument("--Device",type=str,help='Device to connect with Droidmon Option')
     args = parser.parse_args()
 
 
@@ -1240,10 +1246,11 @@ def main():
 
     DynamicAnalysis = args.DroidBox
     koodousAnalysis = args.Koodous
+    Droidmon = args.Droidmon
     
     if (not koodousAnalysis) and (not createAPK) and (not apktoolUse) and (not unzipUse) and (
             not exiftoolUse) and (not jadxUse) and (not opcodesUse) and (not getjar) and (not allReal) and (
-            not DynamicAnalysis):
+            not DynamicAnalysis) and (not Droidmon):
         print("[-] Use --help or -h to check help")
         sys.exit(0)
 
@@ -1254,7 +1261,7 @@ def main():
     ##################################### Do a quick analysis with koodous, you need to write your token
     if koodousAnalysis:
         if apkFile == '':
-            print(help)
+            print("[-] Use --help or -h to check help")
             sys.exit(0)
 
         # First take a look if path is relative or absolute
@@ -1271,12 +1278,97 @@ def main():
     ##################################### Create an apk from apktool modification smali code
     if createAPK:
         if (folderWithCode == '') or (apkOutputName == ''):
-            print(help)
+            print("[-] Use --help or -h to check help")
             sys.exit(0)
         createAPKFunc(folderWithCode, apkOutputName)
         sys.exit(0)
 
-    ##################################### Dynamic Anaylisis function with all necessary classes
+
+    ##################################### Dynamic Analysis function with Droidmon
+    if Droidmon:
+        if apkFile == '':
+            print("[-] Use --help or -h to check help")
+            sys.exit(0)
+
+      # First take a look if path is relative or absolute
+        isAbs = os.path.isabs(apkFile)
+
+        if not isAbs:
+            # if relative, well get absolute path
+            apkFile = os.path.abspath(apkFile)
+
+        ip = args.Device()
+        if ip is None or ip == '':
+            print("[-] You must specify a valid IP")
+            sys.exit(-1)
+        adbHandler = adbClass.Adb()
+        # connect to ADB
+        retorno = adbHandler.connectADB(ip)
+
+        if retorno != 0:
+            print("[-] There was an error")
+            sys.exit(retorno)
+        else:
+            dynamicAnalizer = adbClass.DynamicAnalyzer(apk=apkFile)
+            dynamicAnalizer.extractingApk()
+
+            print(OKBLUE)
+            print("################# DYNAMIC ANALYSIS #########################")
+            print(ENDC)
+
+            activities = dynamicAnalizer.activities
+            mainActivity = dynamicAnalizer.mainActivity
+            packages = dynamicAnalizer.packages
+
+
+            if len(packages) > 0:
+                packages = packages[0]
+
+            usesPermissions = dynamicAnalizer.permissions
+            permissions = dynamicAnalizer.outPermissions
+            receivers = dynamicAnalizer.receivers
+            recvsactions = dynamicAnalizer.recvsactions
+            print("[+] MainActivity: " + str(mainActivity))
+            time.sleep(1)
+            print("[+] Activities: ");
+            pprint.pprint(activities)
+            time.sleep(1)
+            print("[+] Packages: " + str(packages))
+            time.sleep(1)
+            print("[+] Uses-Permissions: ");
+            pprint.pprint(usesPermissions)
+            time.sleep(1)
+            print("[+] Permissions: ");
+            pprint.pprint(permissions)
+            time.sleep(1)
+            print("[+] Receivers: ");
+            pprint.pprint(receivers)
+            time.sleep(1)
+            print("[+] Receivers actions: ");
+            pprint.pprint(recvsactions)
+            time.sleep(1)
+
+            # If some error parsing AndroidManifest something strange happened, then exit
+            if mainActivity == None:
+                print("[-] No Main Activity where start...")
+                sys.exit(-1)
+            if packages == None:
+                print("[-] No Packages...")
+                sys.exit(-1)
+
+
+
+            ret = subprocess.call(['monkeyrunner', 'utilities/monkeyFaren.py', apkFile, packages, mainActivity],
+                              stderr=subprocess.PIPE, cwd=os.path.dirname(os.path.realpath(__file__)))
+
+            if ret == 1:
+                print("[-] Failed to start monkeyrunner")
+                sys.exit(1)
+
+            applicationStarted = 0
+            stringApplicationStarted = "Start proc %s" % packages
+
+    ##################################### Dynamic Analysis function with all necessary classes
 
     # Variables to save data from analysis
     sendsms = {}
@@ -1295,7 +1387,7 @@ def main():
 
     if DynamicAnalysis:
         if apkFile == '':
-            print(help)
+            print("[-] Use --help or -h to check help")
             sys.exit(0)
 
         # First take a look if path is relative or absolute
@@ -1630,10 +1722,10 @@ def main():
     ##################################### Do everything O.O
     if allReal:
         if apkFile == '':
-            print(help)
+            print("[-] Use --help or -h to check help")
             sys.exit(0)
         if outputName == '':
-            print(help)
+            print("[-] Use --help or -h to check help")
             sys.exit(0)
 
         createApktoolFunc(apkFile)
@@ -1645,10 +1737,10 @@ def main():
 
         ############################### Function by function
         if apkFile == '':
-            print(help)
+            print("[-] Use --help or -h to check help")
             sys.exit(0)
         if outputName == '':
-            print(help)
+            print("[-] Use --help or -h to check help")
             sys.exit(0)
         if apktoolUse:
             createApktoolFunc(apkFile)
