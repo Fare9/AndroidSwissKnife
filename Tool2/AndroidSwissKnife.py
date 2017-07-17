@@ -22,6 +22,7 @@ from Utilities.Useful_vars import apkInformation
 from Core.File_checker import checkFile
 from Core.ApktoolAnalysis import createApktoolFunc
 from Core.UnzipAnalysis import unzipFunc
+from Core.JadxAnalysis import jadxFunc
 
 def main():
 
@@ -33,6 +34,8 @@ def main():
 
     parser.add_argument("--unzip",action="store_true",help="use unzip in Analysis")
     parser.add_argument("--regEx",type=str,help='with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)')
+
+    parser.add_argument("--jadx",action="store_true",help="use jadx to try to get source code")
 
     parser.add_argument("--all",action="store_true",help="use all Analysis")
 
@@ -66,8 +69,10 @@ def main():
     # for unzip
     unzipUse = args.unzip
     regularExpression = args.regEx
+    # for jadx
+    jadxUse = args.jadx
 
-    if (not allUse) and (not apktoolUse) and (not unzipUse):
+    if (not allUse) and (not apktoolUse) and (not unzipUse) and (not jadxUse):
         print("[-] Use --help or -h to check help")
         sys.exit(0)
     
@@ -86,11 +91,14 @@ def main():
     if allUse:
         createApktoolFunc(apkFile,outputName,exiftoolUse)
         unzipFunc(apkFile,outputName,regularExpression)
+        jadxUse(apkFile,outputName)
     else: # Function by function
         if apktoolUse:
             createApktoolFunc(apkFile,outputName,exiftoolUse)
         if unzipUse:
             unzipFunc(apkFile,outputName,regularExpression)
+        if jadxUse:
+            jadxFunc(apkFile,outputName)
     # finally check if wants to write json file
     if args.json:
         with open(args.json, 'w') as outfile:
