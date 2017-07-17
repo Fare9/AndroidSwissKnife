@@ -184,32 +184,32 @@ def __showStrings(directory, regEx):
                 try:
                     javaClass = subprocess.check_output("strings %s | egrep %s" % (os.path.join(root, file),javaclassRegEx),shell=True)
                     __print_list(0,javaClass.decode('utf-8'),'\n')
-                    apkInformation['strings']['javaclasses'].append({os.path.join(root, file):javaClass.decode('utf-8')})
+                    apkInformation['strings']['javaclasses'].append({os.path.join(root, file):javaClass.decode('utf-8').split('\n')})
                 except CalledProcessError:
                     pass
                 try:
                     url = subprocess.check_output("strings %s | egrep %s"  % (os.path.join(root, file),urlRegEx))
                     __print_list(0,url.decode('utf-8'),'\n')
-                    apkInformation['strings']['urls'].append({os.path.join(root, file):url.decode('utf-8')})
+                    apkInformation['strings']['urls'].append({os.path.join(root, file):url.decode('utf-8').split('\n')})
                 except CalledProcessError:
                     pass
                 try:
                     urlb64 = subprocess.check_output("strings %s | egrep %s" % (os.path.join(root, file),urlBase64RegEx))
                     __print_list(0,urlb64.decode('utf-8'),'\n')
-                    apkInformation['strings']['urlsB64'].append({os.path.join(root, file):urlb64.decode('utf-8')})
+                    apkInformation['strings']['urlsB64'].append({os.path.join(root, file):urlb64.decode('utf-8').split('\n')})
                 except CalledProcessError:
                     pass
                 try:
                     emails = subprocess.check_output("strings %s | egrep %s" % (os.path.join(root, file),emails))
                     __print_list(0,emails.decode('utf-8'),'\n')
-                    apkInformation['strings']['email'].append({os.path.join(root, file):emails.decode('utf-8')})
+                    apkInformation['strings']['email'].append({os.path.join(root, file):emails.decode('utf-8').split('\n')})
                 except CalledProcessError:
                     pass
                 if regEx != '':
                     try:
                         other = subprocess.check_output("strings %s | egrep %s" % (os.path.join(root, file),regEx))
                         __print_list(0,other.decode('utf-8'),'\n')
-                        apkInformation['strings']['other'].append({os.path.join(root, file):other.decode('utf-8')})
+                        apkInformation['strings']['other'].append({os.path.join(root, file):other.decode('utf-8').split('\n')})
                     except CalledProcessError:
                         pass
             else: # another files
@@ -217,32 +217,32 @@ def __showStrings(directory, regEx):
                 try:
                     javaClass = subprocess.check_output("cat %s | egrep %s" % (os.path.join(root, file),javaclassRegEx),shell=True)
                     __print_list(0,javaclasses.decode('utf-8'),'\n')
-                    apkInformation['strings']['javaclasses'].append({os.path.join(root, file):javaClass.decode('utf-8')})
+                    apkInformation['strings']['javaclasses'].append({os.path.join(root, file):javaClass.decode('utf-8').split('\n')})
                 except CalledProcessError:
                     pass
                 try:
                     url = subprocess.check_output("cat %s | egrep %s"  % (os.path.join(root, file),urlRegEx))
                     __print_list(0,url.decode('utf-8'),'\n')
-                    apkInformation['strings']['urls'].append({os.path.join(root, file):url.decode('utf-8')})
+                    apkInformation['strings']['urls'].append({os.path.join(root, file):url.decode('utf-8').split('\n')})
                 except CalledProcessError:
                     pass
                 try:
                     urlb64 = subprocess.check_output("cat %s | egrep %s" % (os.path.join(root, file),urlBase64RegEx))
                     __print_list(0,urlb64.decode('utf-8'),'\n')
-                    apkInformation['strings']['urlsB64'].append({os.path.join(root, file):urlb64.decode('utf-8')})
+                    apkInformation['strings']['urlsB64'].append({os.path.join(root, file):urlb64.decode('utf-8').split('\n')})
                 except CalledProcessError:
                     pass
                 try:
                     emails = subprocess.check_output("cat %s | egrep %s" % (os.path.join(root, file),emails))
                     __print_list(0,emails.decode('utf-8'),'\n')
-                    apkInformation['strings']['email'].append({os.path.join(root, file):emails.decode('utf-8')})
+                    apkInformation['strings']['email'].append({os.path.join(root, file):emails.decode('utf-8').split('\n')})
                 except CalledProcessError:
                     pass
                 if regEx != '':
                     try:
                         other = subprocess.check_output("cat %s | egrep %s" % (os.path.join(root, file),regEx))
                         __print_list(0,other.decode('utf-8'),'\n')
-                        apkInformation['strings']['other'].append({os.path.join(root, file):other.decode('utf-8')})
+                        apkInformation['strings']['other'].append({os.path.join(root, file):other.decode('utf-8').split('\n')})
                     except CalledProcessError:
                         pass
     __print_verbosity(0,"[+] Returning to Directory: %s" % (actualDirectory))
