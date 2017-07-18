@@ -23,6 +23,8 @@ from Core.File_checker import checkFile
 from Core.ApktoolAnalysis import createApktoolFunc
 from Core.UnzipAnalysis import unzipFunc
 from Core.JadxAnalysis import jadxFunc
+from Core.OpcodeAnalysis import opcodesFunc
+from Core.dex2jarAnalysis import getjarFunc
 
 def main():
 
@@ -36,6 +38,10 @@ def main():
     parser.add_argument("--regEx",type=str,help='with unzip function we use a strings searching, you can add a regular Expression (by default URLs and Java Classes)')
 
     parser.add_argument("--jadx",action="store_true",help="use jadx to try to get source code")
+
+    parser.add_argument("--opcodes",action="store_true",help="Get information from opcodes")
+
+    parser.add_argument("--get-jar",action="store_true",help="Get jar from apk and finally the .class in a folder")
 
     parser.add_argument("--all",action="store_true",help="use all Analysis")
 
@@ -71,16 +77,18 @@ def main():
     regularExpression = args.regEx
     # for jadx
     jadxUse = args.jadx
+    # for opcodes
+    opcodesUse = args.opcodes
+    # dex2jar
+    dex2jarUse = args.get_jar
 
-    if (not allUse) and (not apktoolUse) and (not unzipUse) and (not jadxUse):
+    if (not allUse) and (not apktoolUse) and (not unzipUse) and (not jadxUse) and (not opcodesUse) and (
+        not dex2jarUse):
         print("[-] Use --help or -h to check help")
         sys.exit(0)
     
     # Check if user has given data
     if apkFile == '':
-        print("[-] Use --help or -h to check help")
-        sys.exit(0)
-    if outputName == '':
         print("[-] Use --help or -h to check help")
         sys.exit(0)
 
@@ -89,16 +97,30 @@ def main():
     input("Press enter to continue...")
 
     if allUse:
+        if outputName == '':
+            print("[-] Use --help or -h to check help")
+            sys.exit(0)
         createApktoolFunc(apkFile,outputName,exiftoolUse)
         unzipFunc(apkFile,outputName,regularExpression)
         jadxUse(apkFile,outputName)
+        opcodesFunc(apkFile,outputName)
+        getjarFunc(apkFile)
     else: # Function by function
-        if apktoolUse:
-            createApktoolFunc(apkFile,outputName,exiftoolUse)
-        if unzipUse:
-            unzipFunc(apkFile,outputName,regularExpression)
-        if jadxUse:
-            jadxFunc(apkFile,outputName)
+        if outputName == '':
+            if dex2jarUse:
+                getjarFunc(apkFile)
+        else:
+            if apktoolUse:
+                createApktoolFunc(apkFile,outputName,exiftoolUse)
+            if unzipUse:
+                unzipFunc(apkFile,outputName,regularExpression)
+            if jadxUse:
+                jadxFunc(apkFile,outputName)
+            if opcodesUse:
+                opcodesFunc(apkFile,outputName)
+            if dex2jarUse:
+                getjarFunc(apkFile)
+
     # finally check if wants to write json file
     if args.json:
         with open(args.json, 'w') as outfile:
