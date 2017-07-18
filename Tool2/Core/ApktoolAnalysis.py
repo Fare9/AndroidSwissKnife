@@ -34,6 +34,8 @@ def createApktoolFunc(file, outputName, exiftoolUse):
     :param str file: input apk file
     :param str outputName: output name for apktool folder
     :param bool exiftoolUse: boolean to check if we will use exiftool or not
+    :return: None
+    :rtype: None
     '''
 
     __print_verbosity(1,"[+] Creating Directory from apk to apktool output...")
