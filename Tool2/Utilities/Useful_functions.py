@@ -12,7 +12,7 @@
     Useful functions to use in the program
 '''
 
-import signal,sys,time, hashlib
+import signal,sys,time, hashlib, os
 from Utilities.Help_vars import totalHelp
 
 
@@ -128,8 +128,11 @@ def getHashes(apkFile):
     md5 = hashlib.md5()
     sha1 = hashlib.sha1()
     sha256 = hashlib.sha256()
-    f = open(apkFile,'rb')
-
+    try:
+        f = open(apkFile,'rb')
+    except FileNotFoundError:
+        print("[-] %s does not exists" % apkFile)
+        sys.exit(-1)
     #now we read the apk and create hashes
     while True:
         data = f.read(512)
@@ -141,3 +144,39 @@ def getHashes(apkFile):
         sha256.update(data)
 
     return [md5.hexdigest(),sha1.hexdigest(),sha256.hexdigest()]
+
+
+def find(name):
+        """ 
+        Module to find AndroidSwissKnife in variable PATH
+
+        :param str name: path relative to AndroidSwissKnife folder
+        :return: path of AndroidSwissKnife folder with path added by name
+        :rtype: str
+        """
+        path = os.environ['PATH']
+        path = path.split(":")
+
+        for p in path:
+            if 'AndroidSwissKnife' in p:
+                ask = p
+
+        return (ask+'/'+name) 
+
+
+def progressBar(message):
+    """
+    Progress bar for 4 seconds
+
+    :return: None
+    :rtype: None
+    """
+    print(message)
+    for i in range(0,26):
+        x = i*100/25
+        if i != 25:
+            sys.stdout.write("["+"="*i+">]"+str(x)+"%\r")
+        else:
+            sys.stdout.write("["+"="*i+">]"+str(x)+"%\n")
+        sys.stdout.flush() 
+        time.sleep(0.2)
