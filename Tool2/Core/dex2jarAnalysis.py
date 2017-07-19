@@ -23,7 +23,10 @@ def getjarFunc(file):
     :return: None
     :rtype: None
     '''
-
+    if not file:
+        print("[-] Use --help or -h to check help")
+        sys.exit(0)
+        
     __print_verbosity(1,"[+] Creating Directory and jar from apk...")
     actualDirectory = os.getcwd()  # get actual directory
 

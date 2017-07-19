@@ -27,7 +27,10 @@ def jadxFunc(file,outputName):
     :return: None
     :rtype: None
     '''
-
+    if not file or not outputName:
+        print("[-] Use --help or -h to check help")
+        sys.exit(0)
+        
     apkInformation['jadx'] = {}
 
     __print_verbosity(1,"[+] Creating directory from apk to jadx output...")

@@ -28,7 +28,8 @@ def checkFile(file):
 
     :param str file: input apk file to analyze
     '''
-
+    if not file:
+        return
     # first put filename in apkInformation
     apkInformation['file_name'] = file
     print("[+] File: %s" % (str(file)))

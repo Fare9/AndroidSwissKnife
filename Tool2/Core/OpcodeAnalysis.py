@@ -29,6 +29,10 @@ def opcodesFunc(file,outputName):
     :return: None
     :rtype: None
     '''
+    if not file or not outputName:
+        print("[-] Use --help or -h to check help")
+        sys.exit(0)
+        
     __getOpcodes(file,outputName)
     __receiversOpcodes(file)
 

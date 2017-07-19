@@ -9,7 +9,8 @@
 '''
 
 '''
-    Functions for analysis with apktool
+    Functions for analysis with apktool, also we have function
+    to create apk from apktool folder output
 '''
 
 import os,sys,sqlite3,pprint
@@ -37,6 +38,10 @@ def createApktoolFunc(file, outputName, exiftoolUse):
     :return: None
     :rtype: None
     '''
+
+    if not file or not outputName:
+        print("[-] Use --help or -h to check help")
+        sys.exit(0)
 
     __print_verbosity(1,"[+] Creating Directory from apk to apktool output...")
 
@@ -399,3 +404,31 @@ def __extractMetaData(directory):
     finally:
         print('[+] Returning to: ' + actualDirectory)
         os.chdir(actualDirectory)
+
+
+def createAPKFunc(folder, apkName):
+    '''
+    If you change smali code from apktool output, you can pack again in apk file with this function
+
+    :param str folder: output folder from apktool to convert to apk
+    :param str apkName: output apk name
+    :return: None
+    :rtype: None
+    '''
+    if not folder or apkName:
+        print("[-] Use --help or -h to check help")
+        sys.exit(0)
+
+    print('[+] Creating temporary file before sign apk')
+    sentence = 'apktool b ' + folder + ' -o '+apkName+'.apk'
+    os.system(sentence)
+
+    files = os.listdir('.')
+
+    if 'changed_apk.apk' in files:
+        __print_verbosity(0,'[+] Creating signed apk')
+        __print_verbosity(0,'[+] Please use GUI to create signed apk')
+        sentence = 'java -jar Libs/apk-signer-1.8.5.jar'
+        os.system(sentence)
+    else:
+        print('[-] There was a problem with apktool and temporary file')
