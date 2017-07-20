@@ -103,3 +103,5 @@ def install():
     print("[+] Installing BeautifulSoup")
     os.system("pip3 install bs4")
     print("[+] Returning to: " + ASKDirectory)
+
+    os.chdir(ASKDirectory)

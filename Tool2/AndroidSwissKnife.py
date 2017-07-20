@@ -27,6 +27,7 @@ from Core.JadxAnalysis import jadxFunc
 from Core.OpcodeAnalysis import opcodesFunc
 from Core.dex2jarAnalysis import getjarFunc
 from Core.Koodous import KoodousAnalyzer
+from Core.DynamicAnalyzer import DroidBox
 
 def check_cli(args):
 
@@ -48,10 +49,11 @@ def check_cli(args):
 
 
     if (not args.all) and (not args.apktool) and (not args.unzip) and (not args.jadx) and (not args.opcodes) and (
-        not args.get_jar) and (not args.create_apk) and (not args.Koodous):
+        not args.get_jar) and (not args.create_apk) and (not args.Koodous) and (not args.DroidBox):
         print("[-] Use --help or -h to check help")
         sys.exit(0)
     
+
     # check if user wants koodous report
     if args.Koodous:
         koodous = KoodousAnalyzer(apk=apkFile,upload=args.upload)
@@ -88,6 +90,11 @@ def check_cli(args):
         if args.get_jar:
             getjarFunc(apkFile)
 
+    # check if user wants dynamic analysis
+    if args.DroidBox:
+        droidbox = DroidBox(apkFile,args.Device,args.Burp)
+        droidbox.run()
+
     # finally check if wants to write json file
     if args.json:
         with open(args.json, 'w') as outfile:
@@ -119,6 +126,10 @@ def main():
     parser.add_argument("--Koodous",action="store_true",help="Try to search your apk in Koodous, it will take some time")
     parser.add_argument("--upload",action="store_true",help="If APK is not in koodous upload to analysis")
 
+
+    parser.add_argument('--DroidBox',action='store_true',help='Dynamic Analysis with DroidBox (Android 4.2)')
+    parser.add_argument('--Device',type=str,help='Device Name to start')
+    parser.add_argument('--Burp',action='store_true',help='Start Burp to use proxy analysis')
 
     parser.add_argument("--all",action="store_true",help="use all Analysis")
 

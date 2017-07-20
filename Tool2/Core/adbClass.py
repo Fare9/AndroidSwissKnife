@@ -49,7 +49,6 @@ from IPy import IP
 
 from Utilities.Useful_functions import getHashes
 from Utilities.Useful_functions import find
-from Utilities.Print_functions import __print_verbosity
 
 
 class ThreadAnalyzer(Thread):
@@ -199,11 +198,11 @@ class Adb():
         self.emulator = emulator
         self.proxy = proxy
 
-    def connectADB_byIP(self,ip):
+    def connectADB_byName(self,ip):
         """ 
-        Class to connect with adb device, specifically Androidx86 6.0 
+        Class to connect with adb device for cuckooDroid
 
-        :param str ip: ip of virtual machine to connect
+        :param str ip: device name
         :return: integer with result 0 correct -1 something went wrong
         :rtype: int
         """
@@ -254,19 +253,20 @@ class Adb():
     def startEmulatorProxy(self):
         """
         Start android emulator to install the apk and start analyzer with Burpsuite proxy
+        for DroidBox
 
         :return: None
         :rtype: None
         """
-        if emulator == None:
+        if self.emulator == None:
             __print_verbosity(1,'[-] Specify emulator name')
             sys.exit(-1)
-        if proxy == None:
+        if self.proxy == None:
             __print_verbosity(1,'[-] Specify Proxy')
             sys.exit(-1)
         
-        system = self.find("images/system.img")
-        ramdisk = self.find("images/ramdisk.img")
+        system = find("images/system.img")
+        ramdisk = find("images/ramdisk.img")
         sentence = 'gnome-terminal --command "emulator -avd '+self.emulator+' -http-proxy '+self.proxy.ip+':'+self.proxy.port+' -system '+system+' -ramdisk '+ramdisk+' -wipe-data -prop dalvik.vm.execution-mode=int:portable"'
         try:
             __print_verbosity(1,"[+] Exec Emulator")
@@ -282,26 +282,27 @@ class Adb():
     def startEmulator(self):
         """
         Start android emulator to install the apk and start analyzer
+        for DroidBox
 
         :return: None
         :rtype: None
         """
-        if emulator == None:
-            __print_verbosity(1,'[-] Specify emulator name')
+        if self.emulator == None:
+            print('[-] Specify emulator name')
             sys.exit(-1)
         
-        system = self.find("images/system.img")
-        ramdisk = self.find("images/ramdisk.img")
+        system = find("images/system.img")
+        ramdisk = find("images/ramdisk.img")
         sentence = 'gnome-terminal --command "emulator -avd '+self.emulator+' -system '+system+' -ramdisk '+ramdisk+' -wipe-data -prop dalvik.vm.execution-mode=int:portable"'
         try:
-            __print_verbosity(1,"[+] Exec Emulator")
+            print("[+] Exec Emulator")
             #print(sentence)
             #input()
             os.system(sentence)
             self.correct = True
         except Exception as e:
             self.correct = False
-            __print_verbosity(2,"[-] Error with emulator: %s"%str(e))
+            print("[-] Error with emulator: %s"%str(e))
             sys.exit(-1)
 
     def cleanAdbLogcat(self):
