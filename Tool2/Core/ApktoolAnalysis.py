@@ -461,16 +461,18 @@ def createAPKFunc(folder, apkName):
         sys.exit(0)
 
     print('[+] Creating temporary file before sign apk')
-    sentence = 'apktool b ' + folder + ' -o '+apkName+'.apk'
+    sentence = 'apktool b ' + folder + ' -o changed_apk.apk'
     os.system(sentence)
 
     files = os.listdir('.')
 
     if 'changed_apk.apk' in files:
         __print_verbosity(0,'[+] Creating signed apk')
-        __print_verbosity(0,'[+] Please use GUI to create signed apk')
-        sentence = 'java -jar Libs/apk-signer-1.8.5.jar'
+        sentence = 'd2j-apk-sign -f -o ' + apkName + ' changed_apk.apk'
         os.system(sentence)
+        __print_verbosity(0,'[+] Removing temporary file')
+        os.remove('changed_apk.apk')
+        __print_verbosity('[+] Well now you can use your new apk')
     else:
         print('[-] There was a problem with apktool and temporary file')
 

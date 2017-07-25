@@ -12,23 +12,28 @@
     Principal file, here we will parse user CLI  commands.
 '''
 
-import sys, signal, time, os, random, argparse, json, pprint
-from Utilities.Help_vars import totalHelp
-from Utilities.Useful_functions import  showTotalHelp
-from Utilities.Useful_vars import banner
-from Utilities.Useful_vars import bannerP
-from Utilities.Useful_vars import verbosity
-from Utilities.Useful_vars import apkInformation
-from Core.File_checker import checkFile
-from Core.ApktoolAnalysis import createApktoolFunc
-from Core.ApktoolAnalysis import createAPKFunc
-from Core.UnzipAnalysis import unzipFunc
-from Core.JadxAnalysis import jadxFunc
-from Core.OpcodeAnalysis import opcodesFunc
-from Core.dex2jarAnalysis import getjarFunc
-from Core.Koodous import KoodousAnalyzer
-from Core.DynamicAnalyzer import DroidBox
-
+try:
+    import sys, signal, time, os, random, argparse, json, pprint
+    from Utilities.Help_vars import totalHelp
+    from Utilities.Useful_functions import  showTotalHelp
+    from Utilities.Useful_vars import banner
+    from Utilities.Useful_vars import bannerP
+    from Utilities.Useful_vars import verbosity
+    from Utilities.Useful_vars import apkInformation
+    from Core.File_checker import checkFile
+    from Core.ApktoolAnalysis import createApktoolFunc
+    from Core.ApktoolAnalysis import createAPKFunc
+    from Core.UnzipAnalysis import unzipFunc
+    from Core.JadxAnalysis import jadxFunc
+    from Core.OpcodeAnalysis import opcodesFunc
+    from Core.dex2jarAnalysis import getjarFunc
+    from Core.Koodous import KoodousAnalyzer
+    from Core.DynamicAnalyzer import DroidBox
+    from Core.Installer import install
+except:
+    import sys, signal, time, os, random, argparse, json, pprint
+    from Core.Installer import install
+    
 def check_cli(args):
 
     if (args.verbosity is None) or (args.verbosity < 0) or (args.verbosity > 3):
@@ -37,7 +42,8 @@ def check_cli(args):
 
     verbosity = args.verbosity
     # first check if want to install
-
+    if args.install:
+        install()
     # check if manual
     if args.man: # show all the help
         showTotalHelp()

@@ -11,6 +11,8 @@
 '''
     Installer of AndroidSwissKnife
 '''
+import os
+
 
 def install():
     '''
